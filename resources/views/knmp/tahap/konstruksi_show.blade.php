@@ -26,23 +26,21 @@
 </div>
 @endif
 
-@if($knmpKonstruksi->count() > 0)
+@if($konstruksi && $konstruksi->penyediaJasa)
 <div class="row mb-3">
-    @foreach($knmpKonstruksi as $kk)
     <div class="col-lg-6">
         <div class="card border-0 shadow-sm">
             <div class="card-body d-flex align-items-center">
-                <div class="me-3" style="width:44px;height:44px;border-radius:12px;background:{{ $kk->peran === 'utama' ? 'linear-gradient(135deg,#3b82f6,#1e40af)' : 'linear-gradient(135deg,#64748b,#475569)' }};display:flex;align-items:center;justify-content:center;">
+                <div class="me-3" style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#1e40af);display:flex;align-items:center;justify-content:center;">
                     <i class="mdi mdi-account-hard-hat text-white" style="font-size:1.2rem;"></i>
                 </div>
                 <div>
-                    <small class="text-muted text-uppercase" style="font-size:0.7rem;">Penyedia {{ $kk->peran }}</small>
-                    <h6 class="mb-0 fw-semibold">{{ $kk->penyedia->nama ?? 'N/A' }}</h6>
+                    <small class="text-muted text-uppercase" style="font-size:0.7rem;">Penyedia Jasa Konstruksi</small>
+                    <h6 class="mb-0 fw-semibold">{{ $konstruksi->penyediaJasa->nama }}</h6>
                 </div>
             </div>
         </div>
     </div>
-    @endforeach
 </div>
 @endif
 

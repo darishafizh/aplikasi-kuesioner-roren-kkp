@@ -259,6 +259,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/usulan', [KnmpTahapController::class, 'usulanIndex'])->name('usulan.index');
         Route::get('/usulan/{knmp}', [KnmpTahapController::class, 'usulanShow'])->name('usulan.show');
         Route::post('/usulan/{knmp}', [KnmpTahapController::class, 'usulanStore'])->name('usulan.store');
+        Route::put('/usulan/{knmp}/update', [KnmpTahapController::class, 'usulanUpdate'])->name('usulan.update');
         Route::post('/usulan-import', [KnmpTahapController::class, 'usulanImport'])->name('usulan.import');
 
         // --- Survey Tahap ---

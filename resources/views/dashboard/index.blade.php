@@ -26,6 +26,15 @@
             color: #1d4ed8 !important;
         }
 
+        /* Force Poppins on Filter Form */
+        #mainFilterForm,
+        #mainFilterForm select,
+        #mainFilterForm option,
+        #mainFilterForm input,
+        #mainFilterForm span {
+            font-family: 'Poppins', sans-serif !important;
+        }
+
         /* Enhanced Search Field */
         .search-field-enhanced {
             border: 1px solid #d1d5db !important;
@@ -277,7 +286,7 @@
                                     <i class="mdi mdi-filter-outline text-muted me-2" style="font-size: 1rem;"></i>
                                     <span class="text-muted me-2" style="font-size: 0.78rem;">Periode:</span>
                                     <select name="period" class="form-select form-select-sm border-0 bg-light"
-                                        style="width: auto; font-weight: 500; font-size: 0.78rem;" onchange="this.form.submit()">
+                                        style="width: auto; font-family: 'Poppins', sans-serif !important; font-weight: 500; font-size: 0.78rem;" onchange="this.form.submit()">
                                         <option value="all" {{ ($period ?? 'all') == 'all' ? 'selected' : '' }}>Semua Waktu</option>
                                         <option value="week" {{ ($period ?? '') == 'week' ? 'selected' : '' }}>Minggu Ini</option>
                                         <option value="month" {{ ($period ?? '') == 'month' ? 'selected' : '' }}>Bulan Ini</option>
@@ -287,7 +296,7 @@
                                 <div class="d-flex align-items-center border-start ps-3">
                                     <span class="text-muted me-2" style="font-size: 0.78rem;">Tahap:</span>
                                     <select name="tahap" class="form-select form-select-sm border-0 bg-light"
-                                        style="width: auto; font-weight: 500; font-size: 0.78rem;" onchange="this.form.submit()">
+                                        style="width: auto; font-family: 'Poppins', sans-serif !important; font-weight: 500; font-size: 0.78rem;" onchange="this.form.submit()">
                                         <option value="all" {{ ($tahap ?? 'all') == 'all' ? 'selected' : '' }}>Semua Tahap</option>
                                         @foreach($availableTahap as $t)
                                             <option value="{{ $t->id }}" {{ ($tahap ?? '') == (string)$t->id ? 'selected' : '' }}>{{ $t->nama_tahap }} - {{ $t->tahun }}</option>
@@ -301,7 +310,7 @@
                                         <input type="text" name="progres_date" class="form-control form-control-sm border-0 bg-transparent flatpickr-dashboard" 
                                             id="mainProgresDateFilter"
                                             value="{{ $selectedProgresDate ?? date('Y-m-d') }}"
-                                            style="cursor:pointer;font-weight:600;font-size: 0.78rem;color:#374151;padding-left: 0;"
+                                            style="cursor:pointer;font-family: 'Poppins', sans-serif !important;font-weight:600;font-size: 0.78rem;color:#374151;padding-left: 0;"
                                             onchange="this.form.submit()">
                                     </div>
                                 </div>

@@ -75,6 +75,15 @@ class DashboardController extends Controller
         }
 
         $desa_knmp = $desa_knmp_query->get();
+        foreach ($desa_knmp as $item) {
+            if ($item->tahap_saat_ini === 'serah_terima') {
+                if (!$item->relationLoaded('latestProgresNasional') || !$item->latestProgresNasional) {
+                    $item->setRelation('latestProgresNasional', new \App\Models\ProgresHarian(['progres' => 100.0]));
+                } else {
+                    $item->latestProgresNasional->progres = 100.0;
+                }
+            }
+        }
         $knmpIds = $desa_knmp->pluck('id')->toArray();
 
         // --- GET AVAILABLE DATES EARLY ---
@@ -211,37 +220,15 @@ class DashboardController extends Controller
         $trendDates = $trendDataQuery->pluck('tanggal')->map(fn($date) => \Carbon\Carbon::parse($date)->format('d M y'))->toArray();
         $trendAverages = $trendDataQuery->pluck('avg_progres')->map(fn($val) => round($val, 2))->toArray();
 
-        // Query progres data up to selected date (OPTIMIZED)
-        $latestIds = DB::table('progres_harian as ph')
-            ->join('konstruksi_knmp as kk', 'ph.knmp_konstruksi_id', '=', 'kk.id')
-            ->selectRaw('MAX(ph.id) as id')
-            ->joinSub(function ($query) use ($knmpIds, $selectedProgresDate) {
-                $query->from('progres_harian as ph2')
-                    ->join('konstruksi_knmp as kk2', 'ph2.knmp_konstruksi_id', '=', 'kk2.id')
-                    ->select('kk2.knmp_id', DB::raw('MAX(ph2.tanggal) as max_tanggal'))
-                    ->whereIn('kk2.knmp_id', $knmpIds);
-                if ($selectedProgresDate) {
-                    $query->where('ph2.tanggal', '<=', $selectedProgresDate);
-                }
-                $query->groupBy('kk2.knmp_id');
-            }, 'max_dates', function ($join) {
-                $join->on('kk.knmp_id', '=', 'max_dates.knmp_id')
-                     ->on('ph.tanggal', '=', 'max_dates.max_tanggal');
-            })
-            ->groupBy('kk.knmp_id', 'ph.tanggal')
-            ->pluck('id');
-
-
-        $progresNasional = DB::table('progres_harian as ph')
-            ->join('konstruksi_knmp as kk', 'ph.knmp_konstruksi_id', '=', 'kk.id')
-            ->join('knmp as k', 'kk.knmp_id', '=', 'k.id')
+        // Query progres data stage-aware (including completed/handed-over stages like Tahap I)
+        $progresNasional = DB::table('knmp as k')
+            ->leftJoin('konstruksi_knmp as kk', 'kk.knmp_id', '=', 'k.id')
             ->leftJoin('batch as b', 'k.batch_id', '=', 'b.id')
             ->leftJoin('penyedia_jasa_konstruksi as pj', 'kk.jasa_konstruksi_id', '=', 'pj.id')
-            ->whereIn('ph.id', $latestIds)
-
+            ->whereIn('k.id', $knmpIds)
             ->select(
-                'ph.*',
-                'kk.knmp_id',
+                'kk.id as knmp_konstruksi_id',
+                'k.id as knmp_id',
                 'k.nama as knmp_nama',
                 'k.kabupaten',
                 'k.provinsi',
@@ -251,45 +238,81 @@ class DashboardController extends Controller
                 'b.nama_tahap as batch_nama',
                 'kk.tanggal_mulai',
                 'pj.nama as nama_jasa_konstruksi'
-
             )
-            ->orderBy('ph.progres', 'desc')
             ->get();
-            
-        $progresNasionalAvg = $progresNasional->avg('progres') ?? 0;
 
-        // Fetch previous progress data to calculate delta (OPTIMIZED)
+        $latestProgres = [];
+        if ($progresNasional->count() > 0) {
+            $validKonstruksiIds = $progresNasional->pluck('knmp_konstruksi_id')->filter()->toArray();
+            if (count($validKonstruksiIds) > 0) {
+                $latestPhSub = DB::table('progres_harian as ph2')
+                    ->select('ph2.knmp_konstruksi_id', DB::raw('MAX(ph2.id) as max_id'))
+                    ->whereIn('ph2.knmp_konstruksi_id', $validKonstruksiIds);
+                if ($selectedProgresDate) {
+                    $latestPhSub->where('ph2.tanggal', '<=', $selectedProgresDate);
+                }
+                $latestPhSub->groupBy('ph2.knmp_konstruksi_id');
+
+                $latestProgres = DB::table('progres_harian as ph')
+                    ->joinSub($latestPhSub, 'max_ids', function ($join) {
+                        $join->on('ph.id', '=', 'max_ids.max_id');
+                    })
+                    ->select('ph.*')
+                    ->get()
+                    ->keyBy('knmp_konstruksi_id');
+            }
+        }
+
         $previousProgresData = [];
-        if ($previousDate) {
-            $prevIds = DB::table('progres_harian as ph')
-                ->join('konstruksi_knmp as kk', 'ph.knmp_konstruksi_id', '=', 'kk.id')
-                ->selectRaw('MAX(ph.id) as id')
-                ->joinSub(function ($query) use ($knmpIds, $previousDate) {
-                    $query->from('progres_harian as ph2')
-                        ->join('konstruksi_knmp as kk2', 'ph2.knmp_konstruksi_id', '=', 'kk2.id')
-                        ->select('kk2.knmp_id', DB::raw('MAX(ph2.tanggal) as max_tanggal'))
-                        ->whereIn('kk2.knmp_id', $knmpIds)
-                        ->where('ph2.tanggal', '<=', $previousDate)
-                        ->groupBy('kk2.knmp_id');
-                }, 'max_dates', function ($join) {
-                    $join->on('kk.knmp_id', '=', 'max_dates.knmp_id')
-                         ->on('ph.tanggal', '=', 'max_dates.max_tanggal');
-                })
-                ->groupBy('kk.knmp_id', 'ph.tanggal')
-                ->pluck('id');
-            
-            $previousProgresData = ProgresHarian::join('konstruksi_knmp as kk', 'progres_harian.knmp_konstruksi_id', '=', 'kk.id')
-                ->whereIn('progres_harian.id', $prevIds)
-                ->pluck('progres_harian.progres', 'kk.knmp_id')
-                ->toArray();
+        if ($previousDate && $progresNasional->count() > 0) {
+            $validKonstruksiIds = $progresNasional->pluck('knmp_konstruksi_id')->filter()->toArray();
+            if (count($validKonstruksiIds) > 0) {
+                $prevPhSub = DB::table('progres_harian as ph2')
+                    ->select('ph2.knmp_konstruksi_id', DB::raw('MAX(ph2.id) as max_id'))
+                    ->whereIn('ph2.knmp_konstruksi_id', $validKonstruksiIds)
+                    ->where('ph2.tanggal', '<=', $previousDate)
+                    ->groupBy('ph2.knmp_konstruksi_id');
 
+                $previousProgresData = DB::table('progres_harian as ph')
+                    ->joinSub($prevPhSub, 'max_ids', function ($join) {
+                        $join->on('ph.id', '=', 'max_ids.max_id');
+                    })
+                    ->pluck('ph.progres', 'ph.knmp_konstruksi_id')
+                    ->toArray();
+            }
         }
 
-        // Attach delta to each KNMP
         foreach ($progresNasional as $item) {
-            $prevProgres = $previousProgresData[$item->knmp_id] ?? $item->progres; // if no previous, delta is 0
-            $item->delta = $item->progres - $prevProgres;
+            $ph = null;
+            if ($item->knmp_konstruksi_id) {
+                $ph = $latestProgres[$item->knmp_konstruksi_id] ?? null;
+            }
+            $item->id = $ph ? $ph->id : null;
+            $item->tanggal = $ph ? $ph->tanggal : null;
+            $item->keterangan = $ph ? $ph->keterangan : null;
+            $item->created_at = $ph ? $ph->created_at : null;
+            $item->updated_at = $ph ? $ph->updated_at : null;
+
+            $progresVal = $ph ? (float)$ph->progres : 0.0;
+            if ($item->tahap_saat_ini === 'serah_terima') {
+                $progresVal = 100.0;
+                $item->keterangan = $item->keterangan ?? 'Selesai';
+            }
+            $item->progres = $progresVal;
+
+            $prevProgres = 0.0;
+            if ($item->tahap_saat_ini === 'serah_terima') {
+                $prevProgres = 100.0;
+            } else {
+                $prevProgres = ($item->knmp_konstruksi_id && isset($previousProgresData[$item->knmp_konstruksi_id]))
+                    ? (float)$previousProgresData[$item->knmp_konstruksi_id]
+                    : $progresVal;
+            }
+            $item->delta = $progresVal - $prevProgres;
         }
+
+        $progresNasional = $progresNasional->sortByDesc('progres')->values();
+        $progresNasionalAvg = $progresNasional->avg('progres') ?? 0;
 
         // ===================================
         // ANALISIS PROGRES KNMP
@@ -533,6 +556,7 @@ class DashboardController extends Controller
 
         $desa_knmp = $desa_knmp_query->get();
         $knmpIds = $desa_knmp->pluck('id')->toArray();
+        $respondenIds = InformasiResponden::whereIn('knmp_id', $knmpIds)->pluck('id')->toArray();
 
         // Get available dates early
         $availableProgressDates = ProgresHarian::join('konstruksi_knmp as kk', 'progres_harian.knmp_konstruksi_id', '=', 'kk.id')
@@ -630,37 +654,16 @@ class DashboardController extends Controller
         $rataRataKebahagiaan = $rataRataKebahagiaanQuery->avg('skor_nilai') ?? 0;
 
 
-        // Mendapatkan ID terbaru per KNMP
-        $latestIds = DB::table('progres_harian as ph')
-            ->join('konstruksi_knmp as kk', 'ph.knmp_konstruksi_id', '=', 'kk.id')
-            ->selectRaw('MAX(ph.id) as id')
-            ->joinSub(function ($query) use ($knmpIds, $selectedProgresDate) {
-                $query->from('progres_harian as ph2')
-                    ->join('konstruksi_knmp as kk2', 'ph2.knmp_konstruksi_id', '=', 'kk2.id')
-                    ->select('kk2.knmp_id', DB::raw('MAX(ph2.tanggal) as max_tanggal'))
-                    ->whereIn('kk2.knmp_id', $knmpIds);
-                if ($selectedProgresDate) {
-                    $query->where('ph2.tanggal', '<=', $selectedProgresDate);
-                }
-                $query->groupBy('kk2.knmp_id');
-            }, 'max_dates', function ($join) {
-                $join->on('kk.knmp_id', '=', 'max_dates.knmp_id')
-                     ->on('ph.tanggal', '=', 'max_dates.max_tanggal');
-            })
-            ->groupBy('kk.knmp_id', 'ph.tanggal')
-            ->pluck('id');
-
-
-        $progresNasional = DB::table('progres_harian as ph')
-            ->join('konstruksi_knmp as kk', 'ph.knmp_konstruksi_id', '=', 'kk.id')
-            ->join('knmp as k', 'kk.knmp_id', '=', 'k.id')
+        // Query progres data stage-aware (including completed/handed-over stages like Tahap I)
+        // Query progres data stage-aware (including completed/handed-over stages like Tahap I)
+        $progresNasional = DB::table('knmp as k')
+            ->leftJoin('konstruksi_knmp as kk', 'kk.knmp_id', '=', 'k.id')
             ->leftJoin('batch as b', 'k.batch_id', '=', 'b.id')
             ->leftJoin('penyedia_jasa_konstruksi as pj', 'kk.jasa_konstruksi_id', '=', 'pj.id')
-            ->whereIn('ph.id', $latestIds)
-
+            ->whereIn('k.id', $knmpIds)
             ->select(
-                'ph.*',
-                'kk.knmp_id',
+                'kk.id as knmp_konstruksi_id',
+                'k.id as knmp_id',
                 'k.nama as knmp_nama',
                 'k.kabupaten',
                 'k.provinsi',
@@ -671,11 +674,30 @@ class DashboardController extends Controller
                 'kk.tanggal_mulai',
                 'pj.nama as nama_jasa_konstruksi'
             )
-
-            ->orderBy('ph.progres', 'desc')
             ->get();
-        
-        // --- START DELTA CALCULATION ---
+
+        $latestProgres = [];
+        if ($progresNasional->count() > 0) {
+            $validKonstruksiIds = $progresNasional->pluck('knmp_konstruksi_id')->filter()->toArray();
+            if (count($validKonstruksiIds) > 0) {
+                $latestPhSub = DB::table('progres_harian as ph2')
+                    ->select('ph2.knmp_konstruksi_id', DB::raw('MAX(ph2.id) as max_id'))
+                    ->whereIn('ph2.knmp_konstruksi_id', $validKonstruksiIds);
+                if ($selectedProgresDate) {
+                    $latestPhSub->where('ph2.tanggal', '<=', $selectedProgresDate);
+                }
+                $latestPhSub->groupBy('ph2.knmp_konstruksi_id');
+
+                $latestProgres = DB::table('progres_harian as ph')
+                    ->joinSub($latestPhSub, 'max_ids', function ($join) {
+                        $join->on('ph.id', '=', 'max_ids.max_id');
+                    })
+                    ->select('ph.*')
+                    ->get()
+                    ->keyBy('knmp_konstruksi_id');
+            }
+        }
+
         $availableProgressDates = ProgresHarian::join('konstruksi_knmp as kk', 'progres_harian.knmp_konstruksi_id', '=', 'kk.id')
             ->whereIn('kk.knmp_id', $knmpIds)
             ->selectRaw('DISTINCT progres_harian.tanggal')
@@ -684,7 +706,6 @@ class DashboardController extends Controller
             ->pluck('tanggal')
             ->toArray();
 
-
         $previousDate = null;
         $currentIndex = array_search($selectedProgresDate, $availableProgressDates);
         if ($currentIndex !== false && isset($availableProgressDates[$currentIndex + 1])) {
@@ -692,37 +713,54 @@ class DashboardController extends Controller
         }
 
         $previousProgresData = [];
-        if ($previousDate) {
-            $prevIds = DB::table('progres_harian as ph')
-                ->join('konstruksi_knmp as kk', 'ph.knmp_konstruksi_id', '=', 'kk.id')
-                ->selectRaw('MAX(ph.id) as id')
-                ->joinSub(function ($query) use ($knmpIds, $previousDate) {
-                    $query->from('progres_harian as ph2')
-                        ->join('konstruksi_knmp as kk2', 'ph2.knmp_konstruksi_id', '=', 'kk2.id')
-                        ->select('kk2.knmp_id', DB::raw('MAX(ph2.tanggal) as max_tanggal'))
-                        ->whereIn('kk2.knmp_id', $knmpIds)
-                        ->where('ph2.tanggal', '<=', $previousDate)
-                        ->groupBy('kk2.knmp_id');
-                }, 'max_dates', function ($join) {
-                    $join->on('kk.knmp_id', '=', 'max_dates.knmp_id')
-                         ->on('ph.tanggal', '=', 'max_dates.max_tanggal');
-                })
-                ->groupBy('kk.knmp_id', 'ph.tanggal')
-                ->pluck('id');
-            
-            $previousProgresData = ProgresHarian::join('konstruksi_knmp as kk', 'progres_harian.knmp_konstruksi_id', '=', 'kk.id')
-                ->whereIn('progres_harian.id', $prevIds)
-                ->pluck('progres_harian.progres', 'kk.knmp_id')
-                ->toArray();
+        if ($previousDate && $progresNasional->count() > 0) {
+            $validKonstruksiIds = $progresNasional->pluck('knmp_konstruksi_id')->filter()->toArray();
+            if (count($validKonstruksiIds) > 0) {
+                $prevPhSub = DB::table('progres_harian as ph2')
+                    ->select('ph2.knmp_konstruksi_id', DB::raw('MAX(ph2.id) as max_id'))
+                    ->whereIn('ph2.knmp_konstruksi_id', $validKonstruksiIds)
+                    ->where('ph2.tanggal', '<=', $previousDate)
+                    ->groupBy('ph2.knmp_konstruksi_id');
 
+                $previousProgresData = DB::table('progres_harian as ph')
+                    ->joinSub($prevPhSub, 'max_ids', function ($join) {
+                        $join->on('ph.id', '=', 'max_ids.max_id');
+                    })
+                    ->pluck('ph.progres', 'ph.knmp_konstruksi_id')
+                    ->toArray();
+            }
         }
 
         foreach ($progresNasional as $item) {
-            $prevProgres = $previousProgresData[$item->knmp_id] ?? $item->progres;
-            $item->delta = $item->progres - $prevProgres;
-        }
-        // --- END DELTA CALCULATION ---
+            $ph = null;
+            if ($item->knmp_konstruksi_id) {
+                $ph = $latestProgres[$item->knmp_konstruksi_id] ?? null;
+            }
+            $item->id = $ph ? $ph->id : null;
+            $item->tanggal = $ph ? $ph->tanggal : null;
+            $item->keterangan = $ph ? $ph->keterangan : null;
+            $item->created_at = $ph ? $ph->created_at : null;
+            $item->updated_at = $ph ? $ph->updated_at : null;
 
+            $progresVal = $ph ? (float)$ph->progres : 0.0;
+            if ($item->tahap_saat_ini === 'serah_terima') {
+                $progresVal = 100.0;
+                $item->keterangan = $item->keterangan ?? 'Selesai';
+            }
+            $item->progres = $progresVal;
+
+            $prevProgres = 0.0;
+            if ($item->tahap_saat_ini === 'serah_terima') {
+                $prevProgres = 100.0;
+            } else {
+                $prevProgres = ($item->knmp_konstruksi_id && isset($previousProgresData[$item->knmp_konstruksi_id]))
+                    ? (float)$previousProgresData[$item->knmp_konstruksi_id]
+                    : $progresVal;
+            }
+            $item->delta = $progresVal - $prevProgres;
+        }
+
+        $progresNasional = $progresNasional->sortByDesc('progres')->values();
         $progresNasionalAvg = count($progresNasional) > 0 ? $progresNasional->avg('progres') : 0;
 
         // KPI Calculations

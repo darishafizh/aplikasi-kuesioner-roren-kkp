@@ -20,11 +20,9 @@ class UsulanTemplateExport implements FromCollection, WithHeadings, ShouldAutoSi
             [
                 'nama' => 'Contoh KNMP 1',
                 'provinsi' => 'JAWA BARAT',
-                'kabupaten_kota' => 'SUKABUMI',
+                'kabupaten' => 'SUKABUMI',
                 'kecamatan' => 'CIREUNGHAS',
-                'desa_kelurahan' => 'CIREUNGHAS',
-                'status' => 'Hub',
-                'tanggal' => date('Y-m-d'),
+                'desa' => 'CIREUNGHAS',
                 'catatan' => 'Catatan usulan contoh 1',
             ]
         ]);
@@ -35,11 +33,9 @@ class UsulanTemplateExport implements FromCollection, WithHeadings, ShouldAutoSi
         return [
             'nama',
             'provinsi',
-            'kabupaten_kota',
+            'kabupaten',
             'kecamatan',
-            'desa_kelurahan',
-            'status',
-            'tanggal',
+            'desa',
             'catatan',
         ];
     }

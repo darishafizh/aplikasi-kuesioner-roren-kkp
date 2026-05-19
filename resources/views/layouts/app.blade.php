@@ -247,8 +247,8 @@
     data-rightbar-onstart="true">
 
     {{-- 🌀 GLOBAL PAGE LOADER --}}
-    {{-- Start hidden immediately if there's a CRUD alert to show --}}
-    <div class="page-loader {{ session('success') || session('error') ? 'hidden' : '' }}" id="pageLoader">
+    {{-- Always start visible — hides on window.load after all resources are ready --}}
+    <div class="page-loader" id="pageLoader">
         <div class="page-loader-spinner"></div>
         <div class="page-loader-text">Memuat...</div>
     </div>
@@ -284,26 +284,29 @@
     @endif
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const overlay = document.getElementById("customAlert");
+        // Alert will be shown by the page loader controller after loader hides
+        (function() {
+            var overlay = document.getElementById("customAlert");
             if (!overlay) return;
 
-            const closeBtn = document.getElementById("alertCloseBtn");
-            const shouldAutoClose = overlay.getAttribute('data-auto-close') === 'true';
-
-            setTimeout(() => overlay.classList.add("show"), 20);
+            var closeBtn = document.getElementById("alertCloseBtn");
+            var shouldAutoClose = overlay.getAttribute('data-auto-close') === 'true';
 
             function closeAlert() {
                 overlay.classList.remove("show");
-                setTimeout(() => overlay.remove(), 200);
+                setTimeout(function() { overlay.remove(); }, 200);
             }
 
             if (closeBtn) closeBtn.addEventListener("click", closeAlert);
 
-            if (shouldAutoClose) {
-                setTimeout(closeAlert, 1500);
-            }
-        });
+            // Expose showAlert globally so the loader controller can trigger it
+            window.__showGlobalAlert = function() {
+                overlay.classList.add("show");
+                if (shouldAutoClose) {
+                    setTimeout(closeAlert, 1500);
+                }
+            };
+        })();
     </script>
 
     <div class="wrapper">
@@ -414,8 +417,6 @@
             var loader = document.getElementById('pageLoader');
             if (!loader) return;
 
-            var hasAlert = !!document.getElementById('customAlert');
-
             function hideLoader() {
                 loader.classList.add('hidden');
             }
@@ -424,16 +425,20 @@
                 loader.classList.remove('hidden');
             }
 
-            // If page has CRUD alert, keep loader hidden
-            if (hasAlert) {
+            // Always wait for window.load (all resources including CDN icons)
+            // Then hide loader and show alert simultaneously
+            function onPageReady() {
                 hideLoader();
-            } else {
-                // Hide on window fully loaded
-                if (document.readyState === 'complete') {
-                    hideLoader();
-                } else {
-                    window.addEventListener('load', hideLoader);
+                // If there's a global alert, show it immediately after loader hides
+                if (typeof window.__showGlobalAlert === 'function') {
+                    window.__showGlobalAlert();
                 }
+            }
+
+            if (document.readyState === 'complete') {
+                onPageReady();
+            } else {
+                window.addEventListener('load', onPageReady);
             }
 
             // Show loader on regular link navigation

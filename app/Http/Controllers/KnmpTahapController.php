@@ -46,8 +46,9 @@ class KnmpTahapController extends Controller
      */
     public function usulanIndex()
     {
-        $knmps = Knmp::where('tahap_saat_ini', 'usulan')->get();
-        return view('knmp.tahap.usulan_index', compact('knmps'));
+        $knmps = Knmp::where('tahap_saat_ini', 'usulan')->with('tahapUsulan')->get();
+        $batches = \App\Models\Batch::orderBy('id')->get();
+        return view('knmp.tahap.usulan_index', compact('knmps', 'batches'));
     }
 
     /**
@@ -78,16 +79,55 @@ class KnmpTahapController extends Controller
     }
 
     /**
+     * Update data KNMP dan Tahap Usulan dari modal edit.
+     */
+    public function usulanUpdate(Request $request, Knmp $knmp)
+    {
+        $validated = $request->validate([
+            'nama'      => 'required|string|max:255',
+            'desa'      => 'required|string|max:255',
+            'kecamatan' => 'required|string|max:255',
+            'kabupaten' => 'required|string|max:255',
+            'provinsi'  => 'required|string|max:255',
+            'batch_id'  => 'nullable|exists:batch,id',
+            'catatan'   => 'nullable|string',
+        ]);
+
+        DB::transaction(function () use ($knmp, $validated) {
+            $knmp->update([
+                'nama'      => $validated['nama'],
+                'desa'      => $validated['desa'],
+                'kecamatan' => $validated['kecamatan'],
+                'kabupaten' => $validated['kabupaten'],
+                'provinsi'  => $validated['provinsi'],
+                'batch_id'  => $validated['batch_id'] ?? null,
+            ]);
+
+            TahapUsulan::updateOrCreate(
+                ['knmp_id' => $knmp->id],
+                ['catatan' => $validated['catatan'] ?? null]
+            );
+        });
+
+        return redirect()->back()->with('success', 'Data KNMP Usulan berhasil diperbarui.');
+    }
+
+    /**
      * Import data usulan dari Excel.
      */
     public function usulanImport(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
+            'file'     => 'required|mimes:xlsx,xls,csv',
+            'batch_id' => 'nullable|exists:batch,id',
+            'tanggal'  => 'nullable|date',
         ]);
 
+        $batchId  = $request->filled('batch_id') ? (int) $request->batch_id : null;
+        $tanggal  = $request->filled('tanggal') ? $request->tanggal : null;
+
         try {
-            Excel::import(new UsulanImport, $request->file('file'));
+            Excel::import(new UsulanImport($batchId, $tanggal, 'usulan'), $request->file('file'));
             return redirect()->back()->with('success', 'Data usulan berhasil diimport.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
@@ -249,7 +289,6 @@ class KnmpTahapController extends Controller
             'progresHarian'   => $progresHarian,
             'tahapKonstruksi' => $tahapKonstruksi,
             'konstruksi'      => $konstruksi,
-            'knmpKonstruksi'  => $knmp->knmpKonstruksi,
             'dokumentasi'     => $knmp->dokumentasiKonstruksi
         ]);
     }

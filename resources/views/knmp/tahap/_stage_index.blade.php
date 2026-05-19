@@ -141,7 +141,7 @@
                     <table id="scroll-horizontal-datatable" class="table table-striped w-100 nowrap">
                         <thead>
                             <tr>
-                                <th style="width:30px;"><input type="checkbox" id="checkAll"></th>
+                                <th style="width:20px;"><input type="checkbox" id="checkAll"></th>
                                 @foreach($tableColumns as $col)
                                     <th>{{ $col['label'] }}</th>
                                 @endforeach
@@ -156,11 +156,10 @@
                                         <td>
                                             @if(($col['type'] ?? '') === 'lokasi')
                                                 <div>
-                                                    <div class="fw-bold text-dark mb-0" style="font-size: 0.82rem;">{{ $knmp->nama }}</div>
+                                                    <div class="fw-medium text-dark mb-0" style="font-size: 0.82rem;">{{ $knmp->nama }}</div>
                                                     <div class="text-muted" style="font-size: 0.7rem; opacity: 0.8;">
                                                         @php
                                                             $locParts = array_filter([
-                                                                $knmp->desa ? ucwords(strtolower($knmp->desa)) : null,
                                                                 $knmp->kecamatan ? ucwords(strtolower($knmp->kecamatan)) : null,
                                                                 $knmp->kabupaten ? ucwords(strtolower($knmp->kabupaten)) : null,
                                                                 $knmp->provinsi ? ucwords(strtolower($knmp->provinsi)) : null
@@ -207,10 +206,12 @@
                                         </td>
                                     @endforeach
                                     <td class="action-buttons">
-                                        <a href="{{ route($showRoute, $knmp->nama) }}"
-                                            class="btn btn-action btn-action-primary" title="Detail">
-                                            <i data-lucide="eye"></i>
-                                        </a>
+                                        @if(!(isset($hideDetailAction) && $hideDetailAction))
+                                            <a href="{{ route($showRoute, $knmp->nama) }}"
+                                                class="btn btn-action btn-action-primary" title="Detail">
+                                                <i data-lucide="eye"></i>
+                                            </a>
+                                        @endif
                                         @if(isset($extraActions) && is_callable($extraActions))
                                             {!! $extraActions($knmp) !!}
                                         @endif
@@ -724,6 +725,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body px-4 pt-3 pb-4">
+                        {{-- Extra fields (e.g. batch & tanggal for Usulan) --}}
+                        @if(isset($importExtraFields) && is_array($importExtraFields))
+                            @foreach($importExtraFields as $field)
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-secondary mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">{{ $field['label'] }}</label>
+                                    @if(($field['type'] ?? 'text') === 'select')
+                                        <select class="form-select" name="{{ $field['name'] }}" style="font-size: 0.85rem; border-radius: 10px; border: 1.5px solid #e2e8f0; padding: 10px 14px;" {{ ($field['required'] ?? false) ? 'required' : '' }}>
+                                            <option value="">{{ $field['placeholder'] ?? '— Pilih —' }}</option>
+                                            @foreach($field['options'] as $opt)
+                                                <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                                            @endforeach
+                                        </select>
+                                    @elseif(($field['type'] ?? 'text') === 'date')
+                                        <input type="date" class="form-control" name="{{ $field['name'] }}" style="font-size: 0.85rem; border-radius: 10px; border: 1.5px solid #e2e8f0; padding: 10px 14px;" {{ ($field['required'] ?? false) ? 'required' : '' }}>
+                                    @else
+                                        <input type="text" class="form-control" name="{{ $field['name'] }}" style="font-size: 0.85rem; border-radius: 10px; border: 1.5px solid #e2e8f0; padding: 10px 14px;" {{ ($field['required'] ?? false) ? 'required' : '' }}>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @endif
+
                         <div class="mb-4">
                             <label class="form-label fw-semibold text-dark mb-2" style="font-size: 0.85rem;">File Excel (.xlsx)</label>
                             <div class="p-3 bg-light rounded-3 border-2 border-dashed border-primary-subtle text-center mb-3">
@@ -749,6 +771,12 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
+@endif
+
+{!! $extraModals ?? '' !!}
+
+@if(isset($extraModalsView))
+    @include($extraModalsView)
 @endif
 
 @endsection

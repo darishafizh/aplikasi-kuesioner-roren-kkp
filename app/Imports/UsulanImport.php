@@ -13,6 +13,20 @@ use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 
 class UsulanImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCalculatedFormulas
 {
+    protected ?int $batchId;
+    protected ?string $tanggal;
+    protected string $tahapSaatIni;
+
+    /**
+     * Menerima parameter dari modal import (bukan dari Excel).
+     */
+    public function __construct(?int $batchId = null, ?string $tanggal = null, string $tahapSaatIni = 'usulan')
+    {
+        $this->batchId      = $batchId;
+        $this->tanggal      = $tanggal;
+        $this->tahapSaatIni = $tahapSaatIni;
+    }
+
     /**
     * @param array $row
     *
@@ -22,7 +36,7 @@ class UsulanImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCalcu
     {
         // Support both variations of header names
         $namaRaw   = trim($row['nama'] ?? $row['nama_knmp'] ?? '');
-        $desaRaw   = trim($row['desa_kelurahan'] ?? $row['desa'] ?? '');
+        $desaRaw   = trim($row['desa'] ?? $row['desa_kelurahan'] ?? '');
 
         // Skip only if BOTH name and village are empty
         if ($namaRaw === '' && $desaRaw === '') {
@@ -36,34 +50,34 @@ class UsulanImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCalcu
 
         return DB::transaction(function () use ($row, $namaRaw, $desaRaw) {
             $provinsi  = trim($row['provinsi'] ?? $row['province'] ?? '');
-            $kabupaten = trim($row['kabupaten_kota'] ?? $row['kabupaten'] ?? $row['regency'] ?? '');
+            $kabupaten = trim($row['kabupaten'] ?? $row['kabupaten_kota'] ?? $row['regency'] ?? '');
             $kecamatan = trim($row['kecamatan'] ?? $row['district'] ?? '');
-            $status    = trim($row['status'] ?? '');
 
-            // 1. Create KNMP (Always create new to avoid merging duplicates)
+            // 1. Create KNMP — batch_id & tahap_saat_ini come from the constructor (modal form)
             $knmp = Knmp::create([
+                'batch_id'       => $this->batchId,
                 'nama'           => $namaRaw,
                 'provinsi'       => $provinsi,
                 'kabupaten'      => $kabupaten,
                 'kecamatan'      => $kecamatan,
                 'desa'           => $desaRaw,
-                'status'         => $status,
-                'tahap_saat_ini' => 'usulan',
+                'status'         => trim($row['status'] ?? ''),
+                'tahap_saat_ini' => $this->tahapSaatIni,
             ]);
 
-            // 2. Create Tahap Usulan data
+            // 2. Create Tahap Usulan — tanggal comes from the constructor (modal form), catatan from Excel
             TahapUsulan::create([
                 'knmp_id' => $knmp->id,
-                'tanggal' => $this->transformDate($row['tanggal'] ?? null),
-                'catatan' => $row['catatan'] ?? null,
+                'tanggal' => $this->tanggal,
+                'catatan' => trim($row['catatan'] ?? ''),
             ]);
 
-            // 3. Optional: Add initial history if it's new
+            // 3. Add initial history
             if ($knmp->wasRecentlyCreated) {
                 RiwayatTahap::create([
                     'knmp_id'    => $knmp->id,
                     'tahap_dari' => null,
-                    'tahap_ke'   => 'usulan',
+                    'tahap_ke'   => $this->tahapSaatIni,
                     'keterangan' => 'Import awal dari Excel',
                     'created_by' => auth()->check() ? (string) auth()->id() : 'system',
                 ]);
@@ -71,22 +85,5 @@ class UsulanImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCalcu
 
             return $knmp;
         });
-    }
-
-    /**
-     * Transform Excel date to Y-m-d
-     */
-    private function transformDate($value)
-    {
-        if (empty($value)) return null;
-
-        try {
-            if (is_numeric($value)) {
-                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
-            }
-            return date('Y-m-d', strtotime($value));
-        } catch (\Exception $e) {
-            return null;
-        }
     }
 }

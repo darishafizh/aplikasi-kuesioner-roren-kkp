@@ -17,7 +17,15 @@
          'render' => function($k) { return '<span class="badge bg-info">'.$k->informasi_responden_count.'</span>'; }],
     ],
     'extraActions' => function($knmp) {
-        $url = route('forms.index', $knmp->nama);
-        return '<a href="'.$url.'" class="btn btn-action btn-action-outline-info" title="Lihat Responden"><i data-lucide="users"></i></a>';
+        $urlInput = route('forms.index', $knmp->nama);
+        $urlResponden = route('forms.edit-responden', $knmp->nama);
+        return '
+        <a href="'.$urlInput.'" class="btn btn-action btn-action-outline-success" title="Input Survey">
+            <i data-lucide="clipboard-list"></i>
+        </a>
+        <a href="'.$urlResponden.'" class="btn btn-action btn-action-outline-info" title="Kelola Responden">
+            <i data-lucide="users"></i>
+        </a>
+        ';
     },
 ])
