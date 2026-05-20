@@ -56,11 +56,22 @@ class DashboardController extends Controller
         }
 
         // Filter tahap (sekarang menggunakan batch_id)
-        $tahap = $request->get('tahap', 'all');
-        $tahapLabel = 'Semua Tahap';
+        $tahapReq = $request->get('tahap');
+        $tahunReq = $request->get('tahun', session('selected_tahun'));
+
+        // Scope availableTahap
+        $availableTahapQuery = \App\Models\Batch::orderBy('id');
+        if ($tahunReq) {
+            $availableTahapQuery->where('tahun', $tahunReq);
+        }
+        $availableTahap = $availableTahapQuery->get();
+
+        $tahap = $tahapReq !== null ? $tahapReq : 'all';
+
+        $tahapLabel = 'Semua Tahap' . ($tahunReq ? ' Tahun ' . $tahunReq : '');
         if ($tahap !== 'all') {
             $batchObj = \App\Models\Batch::find($tahap);
-            $tahapLabel = $batchObj ? $batchObj->nama_tahap : 'Tahap ' . $tahap;
+            $tahapLabel = $batchObj ? $batchObj->nama_tahap . ' - ' . $batchObj->tahun : 'Tahap ' . $tahap;
         }
 
         $desa_knmp_query = Knmp::with([
@@ -72,6 +83,9 @@ class DashboardController extends Controller
 
         if ($tahap !== 'all') {
             $desa_knmp_query->where('batch_id', $tahap);
+        } elseif ($tahunReq) {
+            $batchIds = $availableTahap->pluck('id');
+            $desa_knmp_query->whereIn('batch_id', $batchIds);
         }
 
         $desa_knmp = $desa_knmp_query->get();
@@ -490,8 +504,7 @@ class DashboardController extends Controller
         $totalTenagaKerja = $totalTenagaKerjaQuery->sum('tk_total') ?? 0;
 
 
-        // Available tahap values for filter
-        $availableTahap = \App\Models\Batch::orderBy('id')->get();
+        // Available tahap values for filter (already scoped at the top)
 
 
         return view('dashboard.index', compact(
@@ -543,7 +556,11 @@ class DashboardController extends Controller
             default => null,
         };
 
-        $tahap = $request->get('tahap', 'all');
+        $tahapReq = $request->get('tahap');
+        $tahunReq = $request->get('tahun', session('selected_tahun'));
+
+        $tahap = $tahapReq !== null ? $tahapReq : 'all';
+
         $desa_knmp_query = Knmp::with([
             'profileKnmp',
             'progresKnmp',
@@ -552,6 +569,9 @@ class DashboardController extends Controller
 
         if ($tahap !== 'all') {
             $desa_knmp_query->where('batch_id', $tahap);
+        } elseif ($tahunReq) {
+            $batchIds = \App\Models\Batch::where('tahun', $tahunReq)->pluck('id');
+            $desa_knmp_query->whereIn('batch_id', $batchIds);
         }
 
         $desa_knmp = $desa_knmp_query->get();
@@ -922,13 +942,20 @@ class DashboardController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $tahap = $request->get('tahap', 'all');
+        $tahapReq = $request->get('tahap');
+        $tahunReq = $request->get('tahun', session('selected_tahun'));
+
+        $tahap = $tahapReq !== null ? $tahapReq : 'all';
+
         $selectedProgresDate = $request->get('progres_date');
 
         $desa_knmp_query = Knmp::query();
 
         if ($tahap !== 'all') {
             $desa_knmp_query->where('batch_id', $tahap);
+        } elseif ($tahunReq) {
+            $batchIds = \App\Models\Batch::where('tahun', $tahunReq)->pluck('id');
+            $desa_knmp_query->whereIn('batch_id', $batchIds);
         }
 
         $knmpIds = $desa_knmp_query->pluck('id')->toArray();
@@ -1042,6 +1069,9 @@ class DashboardController extends Controller
                 
                 // Deviasi = progres terbaru - rencana di minggu saat ini
                 $deviasiData[$kId] = round($progresAktual - $rencanaPersen, 2);
+                
+                // Assign rencana_persen to item so we can pass it to view
+                $item->rencana_persen = $rencanaPersen;
             }
         }
 
@@ -1090,6 +1120,7 @@ class DashboardController extends Controller
                 'lokasi_1' => $lokasi_baris_1,
                 'lokasi_2' => $lokasi_baris_2,
                 'nama_penyedia' => $knmp->nama_jasa_konstruksi ?? '-',
+                'rencana_persen' => $knmp->rencana_persen ?? 0,
                 'progres' => round($progres, 2),
                 'status_text' => $status_text,
                 'status_color' => $status_color,

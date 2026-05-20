@@ -10,6 +10,14 @@
     'importRoute' => route('survey.import'),
     'knmps'       => $knmps,
     'templateSection' => 'survey-knmp',
+    'importExtraFields' => [
+        [
+            'name'     => 'tanggal',
+            'label'    => 'Tanggal Survey',
+            'type'     => 'date',
+            'required' => false,
+        ],
+    ],
     'columns'     => [
         ['label' => 'Lokasi KNMP', 'key' => 'nama', 'type' => 'lokasi'],
         ['label' => 'Status', 'key' => 'status', 'type' => 'badge_status'],

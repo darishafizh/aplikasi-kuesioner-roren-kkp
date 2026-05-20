@@ -10,8 +10,17 @@
     'colorEnd'    => '#0891b2',
     'colorShadow' => 'rgba(6, 182, 212, 0.3)',
     'showRoute'   => 'survey_tahap.show',
+    'importRoute' => route('survey.import'),
     'knmps'       => $knmps,
     'templateSection' => 'survey-knmp',
+    'importExtraFields' => [
+        [
+            'name'     => 'tanggal',
+            'label'    => 'Tanggal Survey',
+            'type'     => 'date',
+            'required' => false,
+        ],
+    ],
     'columns'     => [
         ['label' => 'Lokasi KNMP', 'key' => 'lokasi', 'type' => 'raw', 'render' => function($k) {
             $nama = ucwords(strtolower($k->nama ?? 'N/A'));

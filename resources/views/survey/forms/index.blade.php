@@ -56,10 +56,10 @@
                         <i class="mdi mdi-anchor"></i>
                     </div>
                     <div class="ms-3">
-                        <h4 class="mb-1 text-white fw-bold">{{ $knmp->nama ?? 'Nama KNMP Tidak Ditemukan' }}</h4>
+                        <h4 class="mb-1 text-white fw-bold" style="font-size: var(--font-size-lg); margin-bottom: 0.25rem;">{{ $knmp->nama ?? 'Nama KNMP Tidak Ditemukan' }}</h4>
                         <div class="d-flex align-items-center flex-wrap gap-2">
-                            <p class="mb-0 text-white-50 small"><i class="mdi mdi-map-marker me-1"></i>Kampung Nelayan Merah Putih</p>
-                            <span class="badge bg-white text-primary text-uppercase px-2 py-1 rounded-pill shadow-sm" style="font-size: 0.7rem; font-weight: 600;">
+                            <p class="mb-0 text-white-50" style="font-size: var(--font-size-xs);"><i class="mdi mdi-map-marker me-1"></i>Kampung Nelayan Merah Putih</p>
+                            <span class="badge bg-white text-primary text-uppercase px-2 py-0.5 rounded-pill shadow-sm" style="font-size: var(--font-size-xs); font-weight: 600;">
                                 <i class="mdi mdi-chart-timeline-variant me-1"></i>Tahap: {{ $knmp->tahap_label }}
                             </span>
                         </div>
@@ -130,13 +130,13 @@
                                         <i class="mdi mdi-chart-arc"></i>
                                     </div>
                                     <div class="ms-3">
-                                        <h5 class="mb-0 fw-semibold text-dark">Progres Pembangunan KNMP</h5>
-                                        <small class="text-muted">Status penyelesaian keseluruhan</small>
+                                        <h5 class="mb-0 fw-semibold text-dark" style="font-size: var(--font-size-sm);">Progres Pembangunan KNMP</h5>
+                                        <small class="text-muted d-block" style="font-size: var(--font-size-xs); line-height: 1.2;">Status penyelesaian keseluruhan</small>
                                     </div>
                                 </div>
                                 <div class="progress-percentage">
-                                    <span class="display-6 fw-bold text-primary">{{ $rataRataProgres }}</span>
-                                    <span class="text-muted">%</span>
+                                    <span class="fw-bold text-primary" style="font-size: var(--font-size-xl);">{{ $rataRataProgres }}</span>
+                                    <span class="text-muted" style="font-size: var(--font-size-sm);">%</span>
                                 </div>
                             </div>
 
@@ -171,10 +171,10 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
                         <span
-                            class="mdi mdi-format-list-bulleted-square text-white bg-primary rounded p-1 me-2 fs-4"></span>
-                        <h5 class="mb-0 fw-semibold">Bagian Kuesioner</h5>
+                            class="mdi mdi-format-list-bulleted-square text-white bg-primary rounded p-1 me-2" style="font-size: var(--font-size-base); line-height: 1;"></span>
+                        <h5 class="mb-0 fw-semibold" style="font-size: var(--font-size-base);">Bagian Kuesioner</h5>
                     </div>
-                    <span class="badge bg-primary text-white rounded-pill px-3">10 Bagian</span>
+                    <span class="badge bg-primary text-white rounded-pill px-2.5 py-1" style="font-size: var(--font-size-xs);">10 Bagian</span>
                 </div>
             </div>
 
@@ -644,21 +644,22 @@
         /* ================================================= */
         .survey-header-card {
             border: none;
-            border-radius: 16px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            margin-bottom: var(--space-3);
         }
 
         .survey-card-header {
             background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-            padding: 1.5rem;
+            padding: 0.75rem 1rem;
         }
 
         .survey-header-icon {
-            width: 60px;
-            height: 60px;
+            width: 40px;
+            height: 40px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 14px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -666,7 +667,7 @@
         }
 
         .survey-header-icon i {
-            font-size: 28px;
+            font-size: 18px;
             color: #fff;
         }
 
@@ -675,28 +676,28 @@
         /* ================================================= */
         .location-info-card {
             background: linear-gradient(145deg, #f8fafc, #f1f5f9);
-            border-radius: 12px;
-            padding: 1.25rem;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
             height: 100%;
         }
 
         .location-header {
             display: flex;
             align-items: center;
-            font-size: 0.95rem;
+            font-size: var(--font-size-base);
         }
 
         .location-grid {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
 
         .location-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.5rem 0;
+            padding: 0.35rem 0;
             border-bottom: 1px dashed #e2e8f0;
         }
 
@@ -707,12 +708,12 @@
         .location-label {
             display: flex;
             align-items: center;
-            font-size: 0.875rem;
+            font-size: var(--font-size-xs);
         }
 
         .location-value .badge {
             font-weight: 500;
-            font-size: 0.8rem;
+            font-size: var(--font-size-xs);
         }
 
         /* ================================================= */
@@ -720,15 +721,15 @@
         /* ================================================= */
         .progress-info-card {
             background: linear-gradient(145deg, #f8fafc, #f1f5f9);
-            border-radius: 12px;
-            padding: 1.25rem;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
         }
 
         .progress-icon-wrapper {
-            width: 48px;
-            height: 48px;
+            width: 36px;
+            height: 36px;
             background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-            border-radius: 12px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -736,7 +737,7 @@
         }
 
         .progress-icon-wrapper i {
-            font-size: 24px;
+            font-size: 18px;
             color: #fff;
         }
 
@@ -745,8 +746,8 @@
         }
 
         .progress-wrapper .progress {
-            height: 12px;
-            border-radius: 6px;
+            height: 8px;
+            border-radius: 4px;
             background: #e2e8f0;
             overflow: hidden;
         }
@@ -761,7 +762,7 @@
         }
 
         .progress-milestones .milestone {
-            font-size: 0.75rem;
+            font-size: var(--font-size-xs);
             color: #94a3b8;
             font-weight: 500;
             transition: all 0.3s ease;
@@ -777,9 +778,9 @@
         /* ================================================= */
         .survey-sections-wrapper {
             background: #fff;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.06);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .survey-accordion {
@@ -788,8 +789,8 @@
 
         .survey-accordion-item {
             border: 1px solid #e2e8f0 !important;
-            border-radius: 12px !important;
-            margin-bottom: 0.75rem;
+            border-radius: 8px !important;
+            margin-bottom: 0.5rem;
             overflow: hidden;
             transition: all 0.3s ease;
         }
@@ -801,10 +802,10 @@
 
         .survey-accordion-btn {
             background: #fff !important;
-            padding: 1rem 1.25rem !important;
+            padding: 0.5rem 0.75rem !important;
             display: flex !important;
             align-items: center !important;
-            gap: 1rem;
+            gap: 0.75rem;
             box-shadow: none !important;
         }
 
@@ -812,32 +813,35 @@
             background: linear-gradient(145deg, #f8fafc, #ffffff) !important;
         }
 
-        .survey-accordion-btn::after {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236b7280'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
-            width: 1rem;
-            height: 1rem;
-            flex-shrink: 0;
-            margin-left: 0.75rem;
+        .survey-accordion-btn::after,
+        .survey-accordion-btn:not(.collapsed)::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+            width: 0.85rem !important;
+            height: 0.85rem !important;
+            background-size: contain !important;
+            background-repeat: no-repeat !important;
+            flex-shrink: 0 !important;
+            margin-left: 0.75rem !important;
         }
 
         .survey-section-indicator {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.875rem;
+            font-size: var(--font-size-xs);
             color: #fff;
             flex-shrink: 0;
         }
 
         .survey-section-icon {
-            width: 40px;
-            height: 40px;
+            width: 28px;
+            height: 28px;
             background: rgba(0, 0, 0, 0.03);
-            border-radius: 10px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -845,7 +849,7 @@
         }
 
         .survey-section-icon i {
-            font-size: 20px;
+            font-size: 14px;
         }
 
         .survey-section-content {
@@ -857,24 +861,24 @@
 
         .survey-section-title {
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: var(--font-size-base);
             color: #1e293b;
         }
 
         .survey-section-desc {
-            font-size: 0.8rem;
+            font-size: var(--font-size-xs);
             color: #64748b;
         }
 
         /* Section Badge */
         .survey-accordion-btn .badge {
             flex-shrink: 0;
-            font-size: 0.7rem;
-            padding: 0.35rem 0.65rem;
+            font-size: var(--font-size-xs);
+            padding: 0.25rem 0.5rem;
         }
 
         .survey-accordion-body {
-            padding: 1.5rem;
+            padding: 0.75rem 1rem;
             background: #fcfcfd;
             border-top: 1px solid #e2e8f0;
         }
@@ -883,14 +887,14 @@
         /* FORM SECTION HEADER STYLES */
         /* ================================================= */
         .form-section-header {
-            padding-bottom: 1rem;
+            padding-bottom: 0.75rem;
             border-bottom: 1px solid #e2e8f0;
         }
 
         .form-section-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -899,7 +903,7 @@
         }
 
         .form-section-icon i {
-            font-size: 28px;
+            font-size: 20px;
         }
 
         .form-section-icon.bg-primary {
@@ -947,8 +951,8 @@
         /* ================================================= */
         .upload-zone {
             border: 2px dashed #3b82f6;
-            border-radius: 16px;
-            padding: 50px 40px;
+            border-radius: 12px;
+            padding: 30px 20px;
             text-align: center;
             background: linear-gradient(145deg, #f0f7ff, #e8f2ff);
             transition: all 0.3s ease;
@@ -967,7 +971,7 @@
         }
 
         .upload-icon {
-            font-size: 64px;
+            font-size: 40px;
             color: #3b82f6;
             margin-bottom: 15px;
             display: block;
@@ -1003,8 +1007,8 @@
             min-width: 200px;
             max-width: 250px;
             background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             overflow: hidden;
             transition: all 0.3s ease;
         }
@@ -1068,27 +1072,27 @@
         /* ================================================= */
         @media (max-width: 768px) {
             .survey-card-header {
-                padding: 1rem;
+                padding: 0.5rem 0.75rem;
             }
 
             .survey-header-icon {
-                width: 48px;
-                height: 48px;
+                width: 32px;
+                height: 32px;
             }
 
             .survey-header-icon i {
-                font-size: 22px;
+                font-size: 16px;
             }
 
             .survey-accordion-btn {
-                padding: 0.875rem 1rem !important;
-                gap: 0.75rem;
+                padding: 0.4rem 0.6rem !important;
+                gap: 0.4rem;
             }
 
             .survey-section-indicator {
-                width: 32px;
-                height: 32px;
-                font-size: 0.8rem;
+                width: 24px;
+                height: 24px;
+                font-size: var(--font-size-xs);
             }
 
             .survey-section-icon {
@@ -1096,11 +1100,11 @@
             }
 
             .survey-section-title {
-                font-size: 0.875rem;
+                font-size: 0.75rem;
             }
 
             .survey-section-desc {
-                font-size: 0.75rem;
+                font-size: 0.625rem;
             }
         }
 
@@ -1138,7 +1142,7 @@
 
         #importModal .modal-content {
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             max-width: 500px;
             width: 100%;
@@ -1148,8 +1152,8 @@
         #importModal .modal-header {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: #fff;
-            border-radius: 12px 12px 0 0;
-            padding: 1rem 1.5rem;
+            border-radius: 10px 10px 0 0;
+            padding: 0.75rem 1.25rem;
         }
 
         #importModal .modal-title {
@@ -1166,12 +1170,12 @@
         }
 
         #importModal .modal-body {
-            padding: 1.5rem;
+            padding: 1.25rem;
         }
 
         #importModal .modal-footer {
             border-top: 1px solid #e9ecef;
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1.25rem;
         }
 
         @media (min-width: 576px) {
@@ -1195,7 +1199,7 @@
 
         #selectRespondenModal .modal-content {
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             max-width: 600px;
             width: 100%;

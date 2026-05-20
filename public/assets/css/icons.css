@@ -1,11 +1,2 @@
 /* Icons CSS - Material Design Icons CDN Reference */
 @import url('https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css');
-
-/* Lucide Icons - Lightweight modern icon library */
-@import url('https://unpkg.com/lucide@latest/font/lucide.css');
-
-/* Unicons */
-@import url('https://unicons.iconscout.com/release/v4.0.8/css/line.css');
-
-/* Dripicons */
-.dripicons-gear:before { content: "⚙"; }

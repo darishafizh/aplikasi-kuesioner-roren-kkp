@@ -22,7 +22,10 @@ use App\Http\Controllers\SosialController;
 use App\Http\Controllers\KnmpTahapController;
 
 
-Route::get('/', function () {
+Route::get('/', function (\Illuminate\Http\Request $request) {
+    if ($request->has('tahun')) {
+        return redirect()->route('login', ['tahun' => $request->query('tahun')]);
+    }
     return redirect()->route('login');
 });
 

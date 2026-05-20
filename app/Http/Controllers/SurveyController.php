@@ -24,6 +24,12 @@ class SurveyController extends Controller
             }
         ]);
 
+        $selectedTahun = session('selected_tahun');
+        if ($selectedTahun) {
+            $batchIds = \App\Models\Batch::where('tahun', $selectedTahun)->pluck('id');
+            $query->whereIn('batch_id', $batchIds);
+        }
+
         // If user is a village user, only show their assigned KNMP
         if ($user->isVillageUser()) {
             $query->where('id', $user->knmp_id);
@@ -89,9 +95,15 @@ class SurveyController extends Controller
         })->count();
         $tingkatKelembagaan = $totalSosial > 0 ? round(($anggotaKelompokKoperasi / $totalSosial) * 100, 2) : 0;
 
+        $availableTahapQuery = \App\Models\Batch::orderBy('id');
+        if ($selectedTahun) {
+            $availableTahapQuery->where('tahun', $selectedTahun);
+        }
+        $availableTahap = $availableTahapQuery->get();
+
         return view('survey.index', compact(
             'knmps', 'provinces', 'totalKnmp', 'ketersediaanInfrastruktur',
-            'indeksKesesuaianKebutuhan', 'pendapatanRtNelayan', 'indeksKesejahteraan', 'tingkatKelembagaan'
+            'indeksKesesuaianKebutuhan', 'pendapatanRtNelayan', 'indeksKesejahteraan', 'tingkatKelembagaan', 'availableTahap'
         ));
     }
 
@@ -125,11 +137,13 @@ class SurveyController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:10240',
+            'file'    => 'required|mimes:xlsx,xls,csv|max:10240',
+            'tanggal' => 'nullable|date',
         ]);
 
         try {
-            Excel::import(new KnmpImport, $request->file('file'));
+            $tanggal = $request->filled('tanggal') ? $request->tanggal : null;
+            Excel::import(new \App\Imports\SurveyKnmpImport($tanggal), $request->file('file'));
             return redirect()->route('survey.index')->with('success', 'Data KNMP berhasil diimport dari Excel!');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();

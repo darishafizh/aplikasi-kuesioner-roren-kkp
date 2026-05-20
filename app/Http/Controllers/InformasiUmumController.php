@@ -22,6 +22,12 @@ class InformasiUmumController extends Controller
         // Filter KNMP list based on user access, only select needed columns and relationships for dropdown
         $knmpQuery = Knmp::select('id', 'nama', 'provinsi', 'kabupaten');
 
+        $selectedTahun = session('selected_tahun');
+        if ($selectedTahun) {
+            $batchIds = \App\Models\Batch::where('tahun', $selectedTahun)->pluck('id');
+            $knmpQuery->whereIn('batch_id', $batchIds);
+        }
+
         // If user is a village user (not admin/super_admin), only show their assigned KNMP
         if ($user->isVillageUser() && !$user->isAdmin() && !$user->isSuperAdmin()) {
             $knmpQuery->where('id', $user->knmp_id);

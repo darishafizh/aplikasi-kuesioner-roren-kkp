@@ -22,8 +22,11 @@ class LoginController extends Controller
      */
     protected int $decaySeconds = 60;
 
-    public function showLoginForm()
+    public function showLoginForm(Request $request)
     {
+        if ($request->has('tahun')) {
+            session(['selected_tahun' => $request->query('tahun')]);
+        }
         $num1 = rand(1, 10);
         $num2 = rand(1, 10);
         session(['captcha_answer' => $num1 + $num2]);
@@ -93,9 +96,15 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        $selectedTahun = session('selected_tahun');
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        if ($selectedTahun) {
+            return redirect()->route('login', ['tahun' => $selectedTahun]);
+        }
         return redirect()->route('login');
     }
 

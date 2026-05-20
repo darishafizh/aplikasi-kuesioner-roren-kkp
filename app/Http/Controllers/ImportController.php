@@ -433,7 +433,7 @@ class ImportController extends Controller
             'sosial-kelembagaan' => ['export' => SosialKelembagaanTemplateExport::class, 'filename' => 'template-sosial-kelembagaan.xlsx', 'needs_responden' => true],
             'progres-knmp-nasional' => ['export' => ProgresHarianTemplateExport::class, 'filename' => 'template-progres-knmp-nasional.xlsx', 'needs_responden' => false],
             'usulan-knmp' => ['export' => UsulanTemplateExport::class, 'filename' => 'template-usulan-knmp.xlsx', 'needs_responden' => false],
-
+            'survey-knmp' => ['export' => \App\Exports\SurveyTemplateExport::class, 'filename' => 'template-survey-knmp.xlsx', 'needs_responden' => false],
         ];
 
         if (!isset($templates[$section])) {
@@ -447,6 +447,9 @@ class ImportController extends Controller
         if ($section === 'progres-knmp-nasional') {
             $tahap = $request->input('tahap');
             $exportInstance = new $template['export']($tahap);
+        } elseif ($section === 'survey-knmp') {
+            $tahap = $request->input('tahap');
+            $exportInstance = new $template['export']($tahap);
         } elseif ($template['needs_responden'] && !empty($respondenIds)) {
             $exportInstance = new $template['export']($respondenIds);
         } else {
@@ -457,6 +460,4 @@ class ImportController extends Controller
         $response->headers->setCookie(cookie('fileDownload', 'true', 1, null, null, false, false));
         return $response;
     }
-
-
 }

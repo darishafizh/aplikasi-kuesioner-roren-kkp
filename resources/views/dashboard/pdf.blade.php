@@ -353,7 +353,8 @@
                         <th style="width: 20px;">No</th>
                         <th>Nama KNMP dan Lokasi</th>
                         <th style="width: 20%;">Penyedia Jasa Konstruksi</th>
-                        <th style="width: 35px;">Progres (%)</th>
+                        <th style="width: 40px;">Rencana (%)</th>
+                        <th style="width: 40px;">Progres (%)</th>
                         <th style="width: 60px;">Status</th>
                         <th style="width: 80px;">Keterangan</th>
                     </tr>
@@ -368,6 +369,9 @@
                             </td>
                             <td class="text-start {{ $row['nama_penyedia'] ? '' : 'muted' }}">
                                 {{ $row['nama_penyedia'] ?: '—' }}
+                            </td>
+                            <td class="col-progres">
+                                {{ number_format($row['rencana_persen'], 2, ',', '.') }}
                             </td>
                             <td class="col-progres">
                                 {{ number_format($row['progres'], 2, ',', '.') }}
@@ -386,7 +390,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center muted" style="padding: 18px; font-style: italic;">
+                            <td colspan="7" class="text-center muted" style="padding: 18px; font-style: italic;">
                                 Belum ada data progres untuk tahap ini.
                             </td>
                         </tr>
@@ -460,7 +464,8 @@
                             <th style="width: 20px;">No</th>
                             <th>Nama KNMP dan Lokasi</th>
                             <th style="width: 20%;">Penyedia Jasa Konstruksi</th>
-                            <th style="width: 35px;">Progres (%)</th>
+                            <th style="width: 40px;">Rencana (%)</th>
+                            <th style="width: 40px;">Progres (%)</th>
                             <th style="width: 60px;">Status</th>
                             <th style="width: 80px;">Keterangan</th>
                         </tr>
@@ -475,6 +480,9 @@
                                 </td>
                                 <td class="text-start {{ $row['nama_penyedia'] ? '' : 'muted' }}">
                                     {{ $row['nama_penyedia'] ?: '—' }}
+                                </td>
+                                <td class="col-progres">
+                                    {{ number_format($row['rencana_persen'], 2, ',', '.') }}
                                 </td>
                                 <td class="col-progres">
                                     {{ number_format($row['progres'], 2, ',', '.') }}
@@ -493,7 +501,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center muted" style="padding: 18px; font-style: italic;">
+                                <td colspan="7" class="text-center muted" style="padding: 18px; font-style: italic;">
                                     Belum ada data progres untuk tahap ini.
                                 </td>
                             </tr>

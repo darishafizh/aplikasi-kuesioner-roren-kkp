@@ -36,8 +36,18 @@ class KnmpTahapController extends Controller
      */
     public function masterIndex()
     {
-        $knmps = Knmp::all();
-        $availableTahap = \App\Models\Batch::orderBy('id')->get();
+        $query = Knmp::query();
+        $availableTahapQuery = \App\Models\Batch::orderBy('id');
+        
+        $selectedTahun = session('selected_tahun');
+        if ($selectedTahun) {
+            $batchIds = \App\Models\Batch::where('tahun', $selectedTahun)->pluck('id');
+            $query->whereIn('batch_id', $batchIds);
+            $availableTahapQuery->where('tahun', $selectedTahun);
+        }
+        
+        $knmps = $query->get();
+        $availableTahap = $availableTahapQuery->get();
         return view('knmp.tahap.master_index', compact('knmps', 'availableTahap'));
     }
 
@@ -46,8 +56,18 @@ class KnmpTahapController extends Controller
      */
     public function usulanIndex()
     {
-        $knmps = Knmp::where('tahap_saat_ini', 'usulan')->with('tahapUsulan')->get();
-        $batches = \App\Models\Batch::orderBy('id')->get();
+        $query = Knmp::where('tahap_saat_ini', 'usulan')->with('tahapUsulan');
+        $batchQuery = \App\Models\Batch::orderBy('id');
+        
+        $selectedTahun = session('selected_tahun');
+        if ($selectedTahun) {
+            $batchIds = \App\Models\Batch::where('tahun', $selectedTahun)->pluck('id');
+            $query->whereIn('batch_id', $batchIds);
+            $batchQuery->where('tahun', $selectedTahun);
+        }
+        
+        $knmps = $query->get();
+        $batches = $batchQuery->get();
         return view('knmp.tahap.usulan_index', compact('knmps', 'batches'));
     }
 
@@ -141,10 +161,19 @@ class KnmpTahapController extends Controller
      */
     public function surveyTahapIndex()
     {
-        $knmps = Knmp::where('tahap_saat_ini', 'survey')
-            ->withCount('informasiResponden')
-            ->get();
-        return view('knmp.tahap.survey_index', compact('knmps'));
+        $query = Knmp::where('tahap_saat_ini', 'survey')->withCount('informasiResponden');
+        $availableTahapQuery = \App\Models\Batch::orderBy('id');
+        
+        $selectedTahun = session('selected_tahun');
+        if ($selectedTahun) {
+            $batchIds = \App\Models\Batch::where('tahun', $selectedTahun)->pluck('id');
+            $query->whereIn('batch_id', $batchIds);
+            $availableTahapQuery->where('tahun', $selectedTahun);
+        }
+        
+        $knmps = $query->get();
+        $availableTahap = $availableTahapQuery->get();
+        return view('knmp.tahap.survey_index', compact('knmps', 'availableTahap'));
     }
 
     /**
@@ -181,7 +210,15 @@ class KnmpTahapController extends Controller
      */
     public function dedIndex()
     {
-        $knmps = Knmp::where('tahap_saat_ini', 'ded')->get();
+        $query = Knmp::where('tahap_saat_ini', 'ded');
+        
+        $selectedTahun = session('selected_tahun');
+        if ($selectedTahun) {
+            $batchIds = \App\Models\Batch::where('tahun', $selectedTahun)->pluck('id');
+            $query->whereIn('batch_id', $batchIds);
+        }
+        
+        $knmps = $query->get();
         return view('knmp.tahap.ded_index', compact('knmps'));
     }
 
@@ -221,7 +258,15 @@ class KnmpTahapController extends Controller
      */
     public function lelangIndex()
     {
-        $knmps = Knmp::where('tahap_saat_ini', 'lelang')->get();
+        $query = Knmp::where('tahap_saat_ini', 'lelang');
+        
+        $selectedTahun = session('selected_tahun');
+        if ($selectedTahun) {
+            $batchIds = \App\Models\Batch::where('tahun', $selectedTahun)->pluck('id');
+            $query->whereIn('batch_id', $batchIds);
+        }
+        
+        $knmps = $query->get();
         return view('knmp.tahap.lelang_index', compact('knmps'));
     }
 
@@ -260,11 +305,19 @@ class KnmpTahapController extends Controller
      */
     public function konstruksiIndex()
     {
-        $knmps = Knmp::where('tahap_saat_ini', 'konstruksi')
-            ->with(['konstruksiKnmp.penyediaJasa', 'latestProgresNasional'])
-            ->get();
-            
-        $availableTahap = \App\Models\Batch::orderBy('id')->get();
+        $query = Knmp::where('tahap_saat_ini', 'konstruksi')
+            ->with(['konstruksiKnmp.penyediaJasa', 'latestProgresNasional']);
+        $availableTahapQuery = \App\Models\Batch::orderBy('id');
+        
+        $selectedTahun = session('selected_tahun');
+        if ($selectedTahun) {
+            $batchIds = \App\Models\Batch::where('tahun', $selectedTahun)->pluck('id');
+            $query->whereIn('batch_id', $batchIds);
+            $availableTahapQuery->where('tahun', $selectedTahun);
+        }
+        
+        $knmps = $query->get();
+        $availableTahap = $availableTahapQuery->get();
         
         return view('knmp.tahap.konstruksi_index', compact('knmps', 'availableTahap'));
     }
@@ -438,7 +491,15 @@ class KnmpTahapController extends Controller
      */
     public function serahTerimaIndex()
     {
-        $knmps = Knmp::where('tahap_saat_ini', 'serah_terima')->get();
+        $query = Knmp::where('tahap_saat_ini', 'serah_terima');
+        
+        $selectedTahun = session('selected_tahun');
+        if ($selectedTahun) {
+            $batchIds = \App\Models\Batch::where('tahun', $selectedTahun)->pluck('id');
+            $query->whereIn('batch_id', $batchIds);
+        }
+        
+        $knmps = $query->get();
         return view('knmp.tahap.serah_terima_index', compact('knmps'));
     }
 

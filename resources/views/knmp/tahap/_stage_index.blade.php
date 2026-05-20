@@ -551,8 +551,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 @push('script')
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Lucide Icons (pinned version for faster loading) -->
+<script src="https://unpkg.com/lucide@1.16.0/dist/umd/lucide.min.js"></script>
 <script>
     lucide.createIcons();
     
