@@ -9,7 +9,7 @@
     <meta content="Kementerian Kelautan dan Perikanan" name="author" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ asset('assets/images/kkp-logo.png') }}">
+    <link rel="shortcut icon" href="https://kampungnelayanmerahputih.kkp.go.id/img/favicon.ico">
 
     <!-- Google Fonts - Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

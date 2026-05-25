@@ -1223,7 +1223,8 @@ class DashboardController extends Controller
             ->setOption('isHtml5ParserEnabled', true)
             ->setOption('isRemoteEnabled', true);
 
-        $filename = 'Progres_KNMP_Tahap_' . $tahapLabel . '_' . date('Y-m-d') . '.pdf';
+        $fileDate = $selectedProgresDate ? date('Y-m-d', strtotime($selectedProgresDate)) : date('Y-m-d');
+        $filename = 'Progres_KNMP_Tahap_' . $tahapLabel . '_' . $fileDate . '.pdf';
         
         // Set cookie so the frontend can hide the loader
         return $pdf->stream($filename)->withCookie(cookie('fileDownload', 'true', 1, null, null, false, false));

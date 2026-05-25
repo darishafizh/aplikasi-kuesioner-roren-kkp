@@ -19,6 +19,7 @@ class SurveyController extends Controller
         $query = ModelsKnmp::where('tahap_saat_ini', 'survey')
             ->withCount('informasiResponden')
             ->with([
+            'batch',
             'buktiUploads' => function ($query) {
                 $query->orderBy('created_at', 'desc')->take(10);
             }

@@ -15,7 +15,6 @@
     'columns'     => [
         ['label' => 'Lokasi KNMP', 'key' => 'nama', 'type' => 'lokasi'],
         ['label' => 'Status', 'key' => 'status', 'type' => 'badge_status'],
-        ['label' => 'Tahap Saat Ini', 'key' => 'tahap_label', 'type' => 'badge_primary'],
     ]
 ])
 

@@ -161,7 +161,7 @@ class KnmpTahapController extends Controller
      */
     public function surveyTahapIndex()
     {
-        $query = Knmp::where('tahap_saat_ini', 'survey')->withCount('informasiResponden');
+        $query = Knmp::where('tahap_saat_ini', 'survey')->with('batch')->withCount('informasiResponden');
         $availableTahapQuery = \App\Models\Batch::orderBy('id');
         
         $selectedTahun = session('selected_tahun');
@@ -571,6 +571,10 @@ class KnmpTahapController extends Controller
      */
     public function batchMoveStage(Request $request)
     {
+        if ($request->has('knmp_ids_string') && !empty($request->input('knmp_ids_string'))) {
+            $request->merge(['knmp_ids' => explode(',', $request->input('knmp_ids_string'))]);
+        }
+
         $validated = $request->validate([
             'knmp_ids'   => 'required|array|min:1',
             'knmp_ids.*' => 'exists:knmp,id',
@@ -599,6 +603,10 @@ class KnmpTahapController extends Controller
      */
     public function batchDestroy(Request $request)
     {
+        if ($request->has('knmp_ids_string') && !empty($request->input('knmp_ids_string'))) {
+            $request->merge(['knmp_ids' => explode(',', $request->input('knmp_ids_string'))]);
+        }
+
         $validated = $request->validate([
             'knmp_ids'   => 'required|array|min:1',
             'knmp_ids.*' => 'exists:knmp,id',

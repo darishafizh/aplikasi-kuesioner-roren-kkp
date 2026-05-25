@@ -183,11 +183,7 @@
     'templateSection' => 'progres-knmp-nasional',
     'columns'     => [
         ['label' => 'Lokasi KNMP', 'key' => 'nama', 'type' => 'lokasi'],
-        ['label' => 'Penyedia Jasa Konstruksi', 'key' => 'penyedia', 'type' => 'raw',
-         'render' => function($k) { return '<span class="text-dark fw-medium" style="font-size: 0.8rem;">'.($k->konstruksiKnmp->penyediaJasa->nama ?? '-').'</span>'; }],
-        ['label' => 'Progres', 'key' => 'progres', 'type' => 'progres_bar'],
-        ['label' => 'Keterangan', 'key' => 'keterangan', 'type' => 'raw',
-         'render' => function($k) { return '<div class="text-muted text-truncate" style="max-width: 200px; font-size: 0.75rem;" title="'.($k->latestProgresNasional->keterangan ?? '-').'">'.($k->latestProgresNasional->keterangan ?? '-').'</div>'; }],
+        ['label' => 'Status', 'key' => 'status', 'type' => 'badge_status'],
     ],
     'extraModals' => $extraModals,
     'extraActions' => function($knmp) {

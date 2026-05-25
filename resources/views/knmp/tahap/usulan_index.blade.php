@@ -20,17 +20,6 @@
     'columns'     => [
         ['label' => 'Lokasi KNMP', 'key' => 'nama', 'type' => 'lokasi'],
         ['label' => 'Status', 'key' => 'status', 'type' => 'badge_status'],
-        ['label' => 'Tanggal Usulan', 'key' => 'tanggal', 'type' => 'raw', 'render' => function($k) {
-            $tgl = $k->tahapUsulan->tanggal ?? null;
-            if (!$tgl) return '<span class="text-muted" style="font-size:0.78rem;">—</span>';
-            return '<span style="font-size:0.78rem;">' . \Carbon\Carbon::parse($tgl)->translatedFormat('d M Y') . '</span>';
-        }],
-        ['label' => 'Catatan', 'key' => 'catatan', 'type' => 'raw', 'render' => function($k) {
-            $catatan = $k->tahapUsulan->catatan ?? null;
-            if (!$catatan) return '<span class="text-muted" style="font-size:0.78rem;">—</span>';
-            $short = \Illuminate\Support\Str::limit($catatan, 50);
-            return '<span style="font-size:0.78rem;" title="' . e($catatan) . '">' . e($short) . '</span>';
-        }],
     ],
     'hideDetailAction' => true,
     'extraModalsView'  => 'knmp.tahap._usulan_edit_modals',

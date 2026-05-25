@@ -1,4 +1,118 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+@section('kpi_cards')
+@php
+    $cntHub = $knmps->filter(function($k) { return stripos($k->status ?? '', 'Hub') !== false; })->count();
+    $cntPenyangga = $knmps->filter(function($k) { 
+        $status = $k->status ?? (in_array($k->batch_id, [1, 2]) ? 'Penyangga' : '');
+        return stripos($status, 'Penyangga') !== false; 
+    })->count();
+    $cntValidasiUlang = $knmps->filter(function($k) { return stripos($k->status ?? '', 'Validasi Ulang') !== false; })->count();
+    $cntTidakLayak = $knmps->filter(function($k) { return stripos($k->status ?? '', 'Tidak Layak') !== false; })->count();
+    
+    $cntSudahProses = $cntHub + $cntPenyangga + $cntValidasiUlang + $cntTidakLayak;
+    $cntTotal = $knmps->count();
+@endphp
+<div class="row mb-2">
+    {{-- Card 1: Total Lokasi --}}
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
+            <div class="card-body p-3 d-block">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">TOTAL LOKASI</h5>
+                    <div style="background: #f0f9ff; color: #0369a1; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="mb-1" style="font-size: 2rem; font-weight: 700; color: #1e293b; line-height: 1;">{{ $cntTotal }}</h3>
+                <p class="mb-0" style="color: #64748b; font-size: 0.8rem;">Lokasi pada tahap ini</p>
+            </div>
+        </div>
+    </div>
+    
+    {{-- Card 2: Sudah Proses --}}
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
+            <div class="card-body p-3 d-block">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px;">SUDAH PROSES</h5>
+                    <div style="background: #ecfdf5; color: #059669; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="mb-1" style="font-size: 2rem; font-weight: 700; color: #1e293b; line-height: 1;">{{ $cntSudahProses }}</h3>
+                <p class="mb-0" style="color: #64748b; font-size: 0.8rem;">Telah ditindaklanjuti</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- Card 3: Tidak Layak --}}
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
+            <div class="card-body p-3 d-block">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px;">TIDAK LAYAK</h5>
+                    <div style="background: #fef2f2; color: #dc2626; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="x-circle" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="mb-1" style="font-size: 2rem; font-weight: 700; color: #1e293b; line-height: 1;">{{ $cntTidakLayak }}</h3>
+                <p class="mb-0" style="color: #64748b; font-size: 0.8rem;">Berstatus Tidak Layak</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-2">
+    {{-- Card 4: Hub --}}
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
+            <div class="card-body p-3 d-block">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px;">TOTAL HUB</h5>
+                    <div style="background: #ecfdf5; color: #047857; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="anchor" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="mb-1" style="font-size: 2rem; font-weight: 700; color: #1e293b; line-height: 1;">{{ $cntHub }}</h3>
+                <p class="mb-0" style="color: #64748b; font-size: 0.8rem;">Berstatus Hub</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- Card 5: Penyangga --}}
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
+            <div class="card-body p-3 d-block">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px;">TOTAL PENYANGGA</h5>
+                    <div style="background: #fffbeb; color: #b45309; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="life-buoy" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="mb-1" style="font-size: 2rem; font-weight: 700; color: #1e293b; line-height: 1;">{{ $cntPenyangga }}</h3>
+                <p class="mb-0" style="color: #64748b; font-size: 0.8rem;">Berstatus Penyangga</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- Card 6: Validasi Ulang --}}
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
+            <div class="card-body p-3 d-block">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px;">VALIDASI ULANG</h5>
+                    <div style="background: #eff6ff; color: #1d4ed8; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="mb-1" style="font-size: 2rem; font-weight: 700; color: #1e293b; line-height: 1;">{{ $cntValidasiUlang }}</h3>
+                <p class="mb-0" style="color: #64748b; font-size: 0.8rem;">Berstatus Validasi Ulang</p>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
 
 @section('content')
 @include('knmp.tahap._stage_index', [
@@ -22,26 +136,17 @@
         ],
     ],
     'columns'     => [
-        ['label' => 'Lokasi KNMP', 'key' => 'lokasi', 'type' => 'raw', 'render' => function($k) {
-            $nama = ucwords(strtolower($k->nama ?? 'N/A'));
-            $desa = ucwords(strtolower($k->desa ?? ''));
-            $kecamatan = ucwords(strtolower($k->kecamatan ?? ''));
-            $kabupaten = ucwords(strtolower($k->kabupaten ?? ''));
-            $provinsi = ucwords(strtolower($k->provinsi ?? ''));
-            
-            // Gabungkan wilayah dengan koma, hiraukan yang kosong
-            $wilayah = collect([$desa, $kecamatan, $kabupaten, $provinsi])->filter()->implode(', ');
-            
-            return "<div class='fw-bold text-dark'>{$nama}</div>
-                    <div class='text-muted' style='font-size: 0.75rem;'>{$wilayah}</div>";
-        }],
+        ['label' => 'Lokasi KNMP', 'key' => 'nama', 'type' => 'lokasi'],
         ['label' => 'Status', 'key' => 'status', 'type' => 'badge_status'],
-        ['label' => 'Jml Responden', 'key' => 'informasi_responden_count', 'type' => 'raw',
-         'render' => function($k) { return '<span class="badge bg-info">'.($k->informasi_responden_count ?? 0).'</span>'; }],
     ],
     'extraActions' => function($knmp) {
+        $tahun = $knmp->batch->tahun ?? null;
+        if ($tahun && $tahun != '2025') {
+            return '';
+        }
         $url = route('forms.index', $knmp->nama);
         return '<a href="'.$url.'" class="btn btn-action btn-action-outline-info" title="Lihat Responden"><i data-lucide="users"></i></a>';
     },
 ])
 @endsection
+

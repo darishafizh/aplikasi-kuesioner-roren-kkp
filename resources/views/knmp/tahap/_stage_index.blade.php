@@ -26,6 +26,10 @@
 </div>
 
 {{-- Stats --}}
+@hasSection('kpi_cards')
+    @yield('kpi_cards')
+@else
+{{-- Default Stats --}}
 <div class="row mb-2">
     {{-- Card 1: Total --}}
     <div class="col-lg-4 col-md-6">
@@ -84,6 +88,7 @@
         </div>
     </div>
 </div>
+@endif
 
 {{-- Slot for extra content (e.g. import form on Usulan) --}}
 @yield('stage_extra')
@@ -179,6 +184,8 @@
                                                     <span class="badge bg-success">Hub</span>
                                                 @elseif(stripos($statusVal, 'Penyangga') !== false)
                                                     <span class="badge bg-warning text-dark">Penyangga</span>
+                                                @elseif(stripos($statusVal, 'Validasi Ulang') !== false)
+                                                    <span class="badge bg-info text-white">Validasi Ulang</span>
                                                 @else
                                                     <span class="badge bg-secondary">{{ $statusVal ?: 'N/A' }}</span>
                                                 @endif
@@ -520,13 +527,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (selectedKnmpIds.size === 0) return;
             
             batchDeleteIdsContainer.innerHTML = '';
-            selectedKnmpIds.forEach(function(id) {
-                var inp = document.createElement('input');
-                inp.type = 'hidden'; 
-                inp.name = 'knmp_ids[]'; 
-                inp.value = id;
-                batchDeleteIdsContainer.appendChild(inp);
-            });
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; 
+            inp.name = 'knmp_ids_string'; 
+            inp.value = Array.from(selectedKnmpIds).join(',');
+            batchDeleteIdsContainer.appendChild(inp);
             
             document.getElementById('batchDeleteForm').submit();
         });
@@ -540,11 +545,12 @@ document.addEventListener('DOMContentLoaded', function() {
             container.innerHTML = '';
             var checkedCount = selectedKnmpIds.size;
             document.getElementById('batchCount').textContent = checkedCount + ' KNMP dipilih';
-            selectedKnmpIds.forEach(function(id) {
-                var inp = document.createElement('input');
-                inp.type = 'hidden'; inp.name = 'knmp_ids[]'; inp.value = id;
-                container.appendChild(inp);
-            });
+            
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; 
+            inp.name = 'knmp_ids_string'; 
+            inp.value = Array.from(selectedKnmpIds).join(',');
+            container.appendChild(inp);
         });
     }
 });
