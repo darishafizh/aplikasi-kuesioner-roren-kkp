@@ -418,10 +418,10 @@ class DashboardController extends Controller
             return (float)$item->progres < 100;
         });
 
-        // 2. Performa 10 KNMP tertinggi deviasinya (deviasi >= 0)
+        // 2. Performa 10 KNMP tertinggi deviasinya (deviasi >= 0 dan progres > 0)
         $top10Knmp = $activeProgresNasional
             ->filter(function($item) {
-                return (float)$item->deviasi >= 0;
+                return (float)$item->deviasi >= 0 && (float)$item->progres > 0;
             })
             ->sortByDesc('deviasi')
             ->take(10)

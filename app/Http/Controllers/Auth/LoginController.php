@@ -67,30 +67,20 @@ class LoginController extends Controller
         // Cari user dengan username yang case-sensitive (menggunakan BINARY comparison)
         $user = User::where('username', $credentials['username'])->first();
 
-        // Jika username tidak ditemukan
-        if (!$user) {
-            RateLimiter::hit($throttleKey, $this->decaySeconds);
-            $attemptsLeft = RateLimiter::remaining($throttleKey, $this->maxAttempts);
-
-            return back()->withErrors([
-                'username' => "Username tidak ditemukan. Sisa percobaan: {$attemptsLeft}.",
-            ])->onlyInput('username');
-        }
-
-        // Verifikasi password cocok
-        if (Hash::check($credentials['password'], $user->password)) {
+        // Verifikasi user dan password cocok
+        if ($user && Hash::check($credentials['password'], $user->password)) {
             RateLimiter::clear($throttleKey);
             Auth::login($user);
             $request->session()->regenerate();
             return redirect()->intended(route('dashboard.index'));
         }
 
-        // Password salah
+        // Jika username tidak ditemukan atau password salah
         RateLimiter::hit($throttleKey, $this->decaySeconds);
         $attemptsLeft = RateLimiter::remaining($throttleKey, $this->maxAttempts);
 
         return back()->withErrors([
-            'password' => "Password yang Anda masukkan salah. Sisa percobaan: {$attemptsLeft}.",
+            'username' => "Username atau password salah. Sisa percobaan: {$attemptsLeft}.",
         ])->onlyInput('username');
     }
 

@@ -348,7 +348,7 @@
             <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
                 <div class="card-body p-2 d-block">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">RATA-RATA NASIONAL</h5>
+                        <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; text-transform: uppercase;">RATA-RATA NASIONAL</h5>
                         <div style="background: #eff6ff; color: #3b82f6; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                             <i class="mdi mdi-chart-bar" style="font-size: 1.2rem;"></i>
                         </div>
@@ -364,7 +364,7 @@
             <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
                 <div class="card-body p-2 d-block">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">TOTAL LOKASI</h5>
+                        <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; text-transform: uppercase;">TOTAL LOKASI</h5>
                         <div style="background: #f8fafc; color: #475569; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                             <i class="mdi mdi-map-marker-multiple" style="font-size: 1.2rem;"></i>
                         </div>
@@ -380,7 +380,7 @@
             <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
                 <div class="card-body p-2 d-block">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">TOTAL SELESAI</h5>
+                        <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; text-transform: uppercase;">TOTAL SELESAI</h5>
                         <div style="background: #ecfdf5; color: #047857; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                             <i class="mdi mdi-check-circle-outline" style="font-size: 1.2rem;"></i>
                         </div>
@@ -396,7 +396,7 @@
             <div class="card widget-flat border-0 shadow-sm h-100" style="border-radius: 12px;">
                 <div class="card-body p-2 d-block">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">ON PROGRES</h5>
+                        <h5 class="fw-semibold mb-0" style="color: #475569; font-size: 0.75rem; text-transform: uppercase;">ON PROGRES</h5>
                         <div style="background: #fffbeb; color: #b45309; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                             <i class="mdi mdi-clock-outline" style="font-size: 1.2rem;"></i>
                         </div>
@@ -679,6 +679,74 @@
 
     <!-- Modal Import -->
 
+
+    {{-- Pipeline Tahapan KNMP --}}
+    @php
+        $pipelineCount = [
+            'usulan' => 0,
+            'survey' => 0,
+            'ded' => 0,
+            'lelang' => 0,
+            'konstruksi' => 0,
+            'serah_terima' => 0,
+        ];
+        
+        $totalKnmpPipeline = count($desa_knmp) > 0 ? count($desa_knmp) : 1;
+        foreach ($desa_knmp as $knmp) {
+            $stg = str_replace(' ', '_', strtolower($knmp->tahap_saat_ini ?? 'usulan'));
+            if ($stg === 'master_plan_ded' || $stg === 'master_plan') $stg = 'ded'; 
+            if (isset($pipelineCount[$stg])) {
+                $pipelineCount[$stg]++;
+            } else {
+                $pipelineCount['usulan']++; // default fallback
+            }
+        }
+
+        $stagesConf = [
+            'usulan' => ['label' => 'Usulan', 'color' => '#3b82f6'], // blue
+            'survey' => ['label' => 'Survey', 'color' => '#10b981'], // emerald
+            'ded' => ['label' => 'DED', 'color' => '#8b5cf6'], // violet
+            'lelang' => ['label' => 'Lelang', 'color' => '#f59e0b'], // amber
+            'konstruksi' => ['label' => 'Konstruksi', 'color' => '#ef4444'], // red
+            'serah_terima' => ['label' => 'Serah Terima', 'color' => '#84cc16'] // green
+        ];
+    @endphp
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0" style="border-radius: 12px; background: #ffffff;">
+                <div class="card-header bg-white border-bottom pb-2 pt-3 px-4" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                    <h5 class="header-title mb-0">
+                        <i class="mdi mdi-chart-timeline me-2 text-primary"></i>Sebaran KNMP Berdasarkan Tahapan
+                    </h5>
+                </div>
+                <div class="card-body px-4 py-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mt-2 mb-2">
+                        @foreach ($stagesConf as $key => $conf)
+                            @php
+                                $cnt = $pipelineCount[$key];
+                                $pct = round(($cnt / $totalKnmpPipeline) * 100);
+                            @endphp
+                            
+                            <div class="text-center flex-fill" style="min-width: 90px;">
+                                <h6 class="mb-3 fw-semibold" style="color: #475569; font-size: 0.75rem;">{{ $conf['label'] }}</h6>
+                                <h2 class="mb-2 fw-bold" style="color: {{ $conf['color'] }}; font-size: 2.6rem; line-height: 1; text-shadow: 0 0 15px {{ $conf['color'] }}20;">
+                                    {{ number_format($cnt) }}
+                                </h2>
+                                <span class="fw-medium" style="font-size: 0.85rem; color: #64748b;">{{ $pct }}%</span>
+                            </div>
+
+                            @if (!$loop->last)
+                                <div class="d-none d-md-flex align-items-center justify-content-center" style="color: #cbd5e1;">
+                                    <i class="mdi mdi-chevron-right fs-4"></i>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {{-- MAP SECTION --}}
     <div class="row">

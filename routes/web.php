@@ -299,9 +299,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/riwayat', [KnmpTahapController::class, 'riwayatIndex'])->name('riwayat_tahap.index');
 
         // --- Perpindahan Tahap ---
-        Route::post('/{knmp}/move', [KnmpTahapController::class, 'moveStage'])->name('knmp_tahap.move');
-        Route::post('/batch-move', [KnmpTahapController::class, 'batchMoveStage'])->name('knmp_tahap.batch_move');
-        Route::delete('/batch-delete', [KnmpTahapController::class, 'batchDestroy'])->name('knmp_tahap.batch_destroy');
-        Route::delete('/{knmp}', [KnmpTahapController::class, 'destroy'])->name('knmp_tahap.destroy');
+        Route::post('/{knmp}/move', [KnmpTahapController::class, 'moveStage'])->middleware('role:super_admin')->name('knmp_tahap.move');
+        Route::post('/batch-move', [KnmpTahapController::class, 'batchMoveStage'])->middleware('role:super_admin')->name('knmp_tahap.batch_move');
+        Route::delete('/batch-delete', [KnmpTahapController::class, 'batchDestroy'])->middleware('role:super_admin')->name('knmp_tahap.batch_destroy');
+        Route::delete('/{knmp}', [KnmpTahapController::class, 'destroy'])->middleware('role:super_admin')->name('knmp_tahap.destroy');
     });
 });
