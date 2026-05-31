@@ -55,7 +55,9 @@
         }
 
         .login-left-panel {
-            background: linear-gradient(135deg, var(--kkp-primary-dark) 0%, var(--kkp-primary) 50%, var(--kkp-primary-light) 100%);
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{{ asset('assets/images/login-bg.png') }}');
+            background-size: cover;
+            background-position: center;
             height: 100vh;
             width: 50%;
             display: flex;
