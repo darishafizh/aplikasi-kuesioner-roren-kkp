@@ -1160,7 +1160,7 @@ class DashboardController extends Controller
             $photos = $knmp->buktiUploads->filter(function ($b) {
                 return str_contains(strtolower($b->tipe_file ?? ''), 'image/')
                     && strtolower($b->kondisi ?? '') === 'after';
-            })->take(1);
+            })->sortByDesc('created_at')->take(1);
             if ($photos->isEmpty()) {
                 continue;
             }
