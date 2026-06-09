@@ -65,12 +65,23 @@
                                                     </div>';
                                                 } else {
                                                     $extraModals .= '
-                                                    <div class="text-center w-100">
-                                                        <div class="mb-2">
-                                                            <i class="mdi mdi-cloud-upload-outline text-primary" style="font-size: 32px; opacity: 0.7;"></i>
+                                                    <div class="text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center m-0 upload-wrapper" style="cursor: pointer;" onclick="this.querySelector(\'.file-input\').click()">
+                                                        <div class="preview-container w-100 h-100 d-none position-relative" style="background: #f8fafc; border-radius: 8px;">
+                                                            <img src="" class="preview-img w-100 h-100" style="object-fit: cover; border-radius: 8px; display: block;" alt="Preview">
+                                                            <div class="position-absolute top-0 end-0 p-2 z-index-1">
+                                                                <button type="button" class="btn btn-sm btn-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center btn-remove-preview" style="width: 32px; height: 32px;" title="Batal" onclick="removePreview(event, this)">
+                                                                    <i class="mdi mdi-close"></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                        <span class="badge bg-primary-subtle text-primary mb-2">Slot '.($i+1).'</span>
-                                                        <input type="file" name="file_before[]" class="form-control form-control-sm mx-auto shadow-sm" accept="image/*,.pdf" style="width: 100%; font-size: 0.75rem; border-radius: 6px;">
+                                                        <div class="upload-placeholder w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                                                            <div class="mb-2">
+                                                                <i class="mdi mdi-cloud-upload-outline text-primary" style="font-size: 32px; opacity: 0.7;"></i>
+                                                            </div>
+                                                            <span class="badge bg-primary-subtle text-primary mb-2">Slot '.($i+1).'</span>
+                                                            <p class="text-muted mb-0" style="font-size: 0.7rem;">Klik untuk memilih foto</p>
+                                                        </div>
+                                                        <input type="file" name="file_before[]" class="d-none file-input" accept="image/*,.pdf" onclick="event.stopPropagation()" onchange="handlePreview(this)">
                                                     </div>';
                                                 }
                                                 $extraModals .= '</div>';
@@ -125,12 +136,23 @@
                                                     </div>';
                                                 } else {
                                                     $extraModals .= '
-                                                    <div class="text-center w-100">
-                                                        <div class="mb-2">
-                                                            <i class="mdi mdi-cloud-upload-outline text-success" style="font-size: 32px; opacity: 0.7;"></i>
+                                                    <div class="text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center m-0 upload-wrapper" style="cursor: pointer;" onclick="this.querySelector(\'.file-input\').click()">
+                                                        <div class="preview-container w-100 h-100 d-none position-relative" style="background: #f8fafc; border-radius: 8px;">
+                                                            <img src="" class="preview-img w-100 h-100" style="object-fit: cover; border-radius: 8px; display: block;" alt="Preview">
+                                                            <div class="position-absolute top-0 end-0 p-2 z-index-1">
+                                                                <button type="button" class="btn btn-sm btn-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center btn-remove-preview" style="width: 32px; height: 32px;" title="Batal" onclick="removePreview(event, this)">
+                                                                    <i class="mdi mdi-close"></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                        <span class="badge bg-success-subtle text-success mb-2">Slot '.($i+1).'</span>
-                                                        <input type="file" name="file_after[]" class="form-control form-control-sm mx-auto shadow-sm" accept="image/*,.pdf" style="width: 100%; font-size: 0.75rem; border-radius: 6px;">
+                                                        <div class="upload-placeholder w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                                                            <div class="mb-2">
+                                                                <i class="mdi mdi-cloud-upload-outline text-success" style="font-size: 32px; opacity: 0.7;"></i>
+                                                            </div>
+                                                            <span class="badge bg-success-subtle text-success mb-2">Slot '.($i+1).'</span>
+                                                            <p class="text-muted mb-0" style="font-size: 0.7rem;">Klik untuk memilih foto</p>
+                                                        </div>
+                                                        <input type="file" name="file_after[]" class="d-none file-input" accept="image/*,.pdf" onclick="event.stopPropagation()" onchange="handlePreview(this)">
                                                     </div>';
                                                 }
                                                 $extraModals .= '</div>';
@@ -166,6 +188,60 @@
             ';
         }
     }
+    
+    $extraModals .= '<script>
+    function handlePreview(input) {
+        if (input.files && input.files[0]) {
+            var file = input.files[0];
+            var wrapper = input.closest(".upload-wrapper");
+            var previewContainer = wrapper.querySelector(".preview-container");
+            var previewImg = wrapper.querySelector(".preview-img");
+            var placeholder = wrapper.querySelector(".upload-placeholder");
+            
+            if (file.type.startsWith("image/")) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = "block";
+                    var pdfIcon = wrapper.querySelector(".pdf-icon");
+                    if(pdfIcon) pdfIcon.style.display = "none";
+                    previewContainer.style.setProperty("display", "block", "important");
+                    placeholder.style.setProperty("display", "none", "important");
+                }
+                reader.readAsDataURL(file);
+            } else if (file.type === "application/pdf") {
+                previewImg.style.display = "none";
+                var pdfIcon = wrapper.querySelector(".pdf-icon");
+                if(!pdfIcon) {
+                    pdfIcon = document.createElement("div");
+                    pdfIcon.className = "pdf-icon text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center rounded";
+                    pdfIcon.style.background = "#f8fafc";
+                    previewContainer.insertBefore(pdfIcon, previewImg);
+                }
+                pdfIcon.innerHTML = "<i class=\"mdi mdi-file-pdf-box text-danger\" style=\"font-size: 48px;\"></i><p class=\"mb-0 small text-truncate px-3 w-100\" style=\"max-width: 130px;\" title=\"" + file.name + "\">" + file.name + "</p>";
+                pdfIcon.style.setProperty("display", "flex", "important");
+                previewContainer.style.setProperty("display", "block", "important");
+                placeholder.style.setProperty("display", "none", "important");
+            }
+        }
+    }
+
+    function removePreview(event, btn) {
+        event.stopPropagation();
+        var wrapper = btn.closest(".upload-wrapper");
+        var input = wrapper.querySelector(".file-input");
+        var previewContainer = wrapper.querySelector(".preview-container");
+        var placeholder = wrapper.querySelector(".upload-placeholder");
+        var previewImg = wrapper.querySelector(".preview-img");
+        var pdfIcon = wrapper.querySelector(".pdf-icon");
+        
+        input.value = "";
+        previewContainer.style.setProperty("display", "none", "important");
+        placeholder.style.setProperty("display", "flex", "important");
+        previewImg.src = "";
+        if(pdfIcon) pdfIcon.style.setProperty("display", "none", "important");
+    }
+    </script>';
 @endphp
 
 @include('knmp.tahap._stage_index', [
@@ -184,6 +260,7 @@
     'columns'     => [
         ['label' => 'Lokasi KNMP', 'key' => 'nama', 'type' => 'lokasi'],
         ['label' => 'Status', 'key' => 'status', 'type' => 'badge_status'],
+        ['label' => 'Progres', 'key' => 'progres', 'type' => 'progres_bar'],
     ],
     'extraModals' => $extraModals,
     'extraActions' => function($knmp) {
