@@ -1116,6 +1116,7 @@ class DashboardController extends Controller
             }
  
             $tableData[] = [
+                'knmp_id' => $knmp->knmp_id,
                 'nama_knmp' => $knmp->knmp_nama,
                 'lokasi_1' => $lokasi_baris_1,
                 'lokasi_2' => $lokasi_baris_2,
@@ -1148,50 +1149,45 @@ class DashboardController extends Controller
         ksort($tableDataByTahap);
 
         // Ambil data KNMP dengan relasi buktiUploads untuk pengelompokan foto
-        $desa_knmp = \App\Models\Knmp::with(['buktiUploads'])->whereIn('id', $knmpIds)->get();
+        $desa_knmp_photos = \App\Models\Knmp::with(['buktiUploads'])->whereIn('id', $knmpIds)->get()->keyBy('id');
 
-        // Group photos by tahap then province (1 location = 1 photo, condition "after")
-        $photosByProvince = [];
+        // Group photos by tahap directly from sorted tableData
+        $photosFlat = [];
         $photosByTahap = [];
-        foreach ($desa_knmp as $knmp) {
-            if ($knmp->buktiUploads->isEmpty()) {
+        foreach ($tableData as $row) {
+            $knmp = $desa_knmp_photos->get($row['knmp_id']);
+            if (!$knmp || $knmp->buktiUploads->isEmpty()) {
                 continue;
             }
+
             $photos = $knmp->buktiUploads->filter(function ($b) {
                 return str_contains(strtolower($b->tipe_file ?? ''), 'image/')
                     && strtolower($b->kondisi ?? '') === 'after';
             })->sortByDesc('created_at')->take(1);
+
             if ($photos->isEmpty()) {
                 continue;
             }
 
-            $provinceName = ucwords(strtolower($knmp->provinsi ?? 'Lainnya'));
-            $tahapKey = $knmp->tahap_saat_ini ?: 'Lainnya';
-
+            $tahapKey = $row['tahap'] ?: 'Lainnya';
             $lokasi_parts = [];
-            if ($knmp->kecamatan) {
-                $lokasi_parts[] = 'Kec. ' . ucwords(strtolower($knmp->kecamatan));
-            }
-            if ($knmp->kabupaten) {
-                $lokasi_parts[] = ucwords(strtolower($knmp->kabupaten));
-            }
+            if ($knmp->kecamatan) $lokasi_parts[] = 'Kec. ' . ucwords(strtolower($knmp->kecamatan));
+            if ($knmp->kabupaten) $lokasi_parts[] = ucwords(strtolower($knmp->kabupaten));
             $lokasi = implode(', ', $lokasi_parts);
 
             $photoItem = [
                 'nama' => $knmp->nama,
                 'lokasi' => $lokasi,
+                'progres' => $row['progres'],
                 'photos' => $photos,
             ];
 
-            $photosByProvince[$provinceName][] = $photoItem;
-            $photosByTahap[$tahapKey][$provinceName][] = $photoItem;
+            $photosFlat[] = $photoItem;
+            if (!isset($photosByTahap[$tahapKey])) {
+                $photosByTahap[$tahapKey] = [];
+            }
+            $photosByTahap[$tahapKey][] = $photoItem;
         }
-        ksort($photosByProvince);
-        ksort($photosByTahap);
-        foreach ($photosByTahap as &$provinces) {
-            ksort($provinces);
-        }
-        unset($provinces);
 
         if ($tahap !== 'all') {
             $tahapLabel = $tahap == 1 ? 'I' : ($tahap == 2 ? 'II' : ($tahap == 3 ? 'III' : $tahap));
@@ -1213,11 +1209,11 @@ class DashboardController extends Controller
         }
 
         $exportDate = Carbon::now('Asia/Jakarta')->locale('id')->translatedFormat('d F Y');
-        $totalLokasi = count($desa_knmp);
+        $totalLokasi = count($desa_knmp_photos);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dashboard.pdf', compact(
             'tahap', 'tahapLabel', 'exportDate', 'totalLokasi', 'avgProgres',
-            'tableData', 'tableDataByTahap', 'photosByProvince', 'photosByTahap', 'selectedProgresDate'
+            'tableData', 'tableDataByTahap', 'photosFlat', 'photosByTahap', 'selectedProgresDate'
         ))
             ->setPaper('a4', 'portrait')
             ->setOption('isHtml5ParserEnabled', true)

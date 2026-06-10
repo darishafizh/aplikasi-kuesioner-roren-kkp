@@ -407,48 +407,39 @@
                 <div class="doc-section">
                     <p class="doc-section-title">Dokumentasi Progres Pembangunan KNMP Tahap {{ $tahapKey == 1 ? 'I' : ($tahapKey == 2 ? 'II' : ($tahapKey == 3 ? 'III' : $tahapKey)) }}</p>
 
-                    @foreach($tahapPhotos as $province => $items)
-                        <div style="page-break-inside: avoid; margin-bottom: 20px;">
-                            <p class="province-title">
-                                <span style="color: #003D7A; font-weight: 700;">PROVINSI {{ strtoupper($province) }}</span>
-                                <span class="count">| {{ count($items) }} Lokasi Terdata</span>
-                            </p>
-
-                            <div class="photo-grid">
-                                @foreach($items as $item)
-                                    <div class="photo-card">
-                                        <div class="photo-card-body">
-                                            @foreach($item['photos'] as $photo)
-                                                @php
-                                                    $imagePath = storage_path('app/public/' . $photo->path_file);
-                                                    $src = '';
-                                                    if (file_exists($imagePath)) {
-                                                        $type = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
-                                                        if ($type === 'jpg') $type = 'jpeg';
-                                                        $data = file_get_contents($imagePath);
-                                                        $src = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                                                    }
-                                                @endphp
-                                                @if($src)
-                                                    <img src="{{ $src }}" alt="{{ $photo->nama_file ?? $item['nama'] }}">
-                                                @else
-                                                    <div style="height: 115px; line-height: 115px; color: #9ca3af; font-size: 8px; background: #f8fafc; text-align: center; border-bottom: 0.6px solid #e5e7eb;">
-                                                        (Foto tidak tersedia)
-                                                    </div>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                        <div class="photo-card-caption">
-                                            <p class="nama">{{ $item['nama'] }}</p>
-                                            @if(!empty($item['lokasi']))
-                                                <p class="lokasi">{{ $item['lokasi'] }}</p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endforeach
+                    <div class="photo-grid">
+                        @foreach($tahapPhotos as $item)
+                            <div class="photo-card" style="page-break-inside: avoid;">
+                                <div class="photo-card-body">
+                                    @foreach($item['photos'] as $photo)
+                                        @php
+                                            $imagePath = storage_path('app/public/' . $photo->path_file);
+                                            $src = '';
+                                            if (file_exists($imagePath)) {
+                                                $type = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
+                                                if ($type === 'jpg') $type = 'jpeg';
+                                                $data = file_get_contents($imagePath);
+                                                $src = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                                            }
+                                        @endphp
+                                        @if($src)
+                                            <img src="{{ $src }}" alt="{{ $photo->nama_file ?? $item['nama'] }}">
+                                        @else
+                                            <div style="height: 115px; line-height: 115px; color: #9ca3af; font-size: 8px; background: #f8fafc; text-align: center; border-bottom: 0.6px solid #e5e7eb;">
+                                                (Foto tidak tersedia)
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                                <div class="photo-card-caption">
+                                    <p class="nama">{{ $item['nama'] }}</p>
+                                    @if(!empty($item['lokasi']))
+                                        <p class="lokasi">{{ $item['lokasi'] }} <br> Progres: {{ number_format($item['progres'], 2, ',', '.') }}%</p>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             @endif
         @endforeach
@@ -515,49 +506,40 @@
         <div class="doc-section page-break">
             <p class="doc-section-title">Dokumentasi Progres Pembangunan KNMP</p>
 
-            @if(count($photosByProvince) > 0)
-                @foreach($photosByProvince as $province => $items)
-                    <div style="page-break-inside: avoid; margin-bottom: 20px;">
-                        <p class="province-title">
-                            <span style="color: #003D7A; font-weight: 700;">PROVINSI {{ strtoupper($province) }}</span>
-                            <span class="count">| {{ count($items) }} Lokasi Terdata</span>
-                        </p>
-
-                        <div class="photo-grid">
-                            @foreach($items as $item)
-                                <div class="photo-card">
-                                    <div class="photo-card-body">
-                                        @foreach($item['photos'] as $photo)
-                                            @php
-                                                $imagePath = storage_path('app/public/' . $photo->path_file);
-                                                $src = '';
-                                                if (file_exists($imagePath)) {
-                                                    $type = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
-                                                    if ($type === 'jpg') $type = 'jpeg';
-                                                    $data = file_get_contents($imagePath);
-                                                    $src = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                                                }
-                                            @endphp
-                                            @if($src)
-                                                <img src="{{ $src }}" alt="{{ $photo->nama_file ?? $item['nama'] }}">
-                                            @else
-                                                <div style="height: 115px; line-height: 115px; color: #9ca3af; font-size: 8px; background: #f8fafc; text-align: center; border-bottom: 0.6px solid #e5e7eb;">
-                                                    (Foto tidak tersedia)
-                                                </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                    <div class="photo-card-caption">
-                                        <p class="nama">{{ $item['nama'] }}</p>
-                                        @if(!empty($item['lokasi']))
-                                            <p class="lokasi">{{ $item['lokasi'] }}</p>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
+            @if(count($photosFlat) > 0)
+                <div class="photo-grid">
+                    @foreach($photosFlat as $item)
+                        <div class="photo-card" style="page-break-inside: avoid;">
+                            <div class="photo-card-body">
+                                @foreach($item['photos'] as $photo)
+                                    @php
+                                        $imagePath = storage_path('app/public/' . $photo->path_file);
+                                        $src = '';
+                                        if (file_exists($imagePath)) {
+                                            $type = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
+                                            if ($type === 'jpg') $type = 'jpeg';
+                                            $data = file_get_contents($imagePath);
+                                            $src = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                                        }
+                                    @endphp
+                                    @if($src)
+                                        <img src="{{ $src }}" alt="{{ $photo->nama_file ?? $item['nama'] }}">
+                                    @else
+                                        <div style="height: 115px; line-height: 115px; color: #9ca3af; font-size: 8px; background: #f8fafc; text-align: center; border-bottom: 0.6px solid #e5e7eb;">
+                                            (Foto tidak tersedia)
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                            <div class="photo-card-caption">
+                                <p class="nama">{{ $item['nama'] }}</p>
+                                @if(!empty($item['lokasi']))
+                                    <p class="lokasi">{{ $item['lokasi'] }} <br> Progres: {{ number_format($item['progres'], 2, ',', '.') }}%</p>
+                                @endif
+                            </div>
                         </div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             @else
                 <div class="photo-empty">
                     Belum ada dokumentasi foto pembangunan yang tersedia untuk periode ini.
